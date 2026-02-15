@@ -5,11 +5,13 @@ import hashlib
 
 st.set_page_config(page_title="System TALES", layout="centered")
 
-# --- FUNKCJE ---
+# --- 1. FUNKCJE POMOCNICZE ---
+
 def check_admin_password(input_password):
     # Hash dla: profesor123
     stored_hash = "f7134375b06d87948a27a85c347d4e339a16f6b30f4060879c94132840001099"
-    return hashlib.sha256(input_password.encode()).hexdigest() == stored_hash
+    # Zamieniamy to co wpiszesz na hash i porównujemy
+    return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
 def wczytaj_dane(sciezka):
     try:
@@ -18,87 +20,106 @@ def wczytaj_dane(sciezka):
         df_h.columns = ["Lp", "Haslo"]
         return df_w, df_h
     except Exception as e:
-        st.error(f"Błąd odczytu pliku: {e}")
         return None, None
 
-# --- SESJA ---
+# --- 2. ZARZĄDZANIE SESJĄ ---
+
 if "zalogowany" not in st.session_state:
     st.session_state.zalogowany = False
     st.session_state.rola = None
     st.session_state.dane = None
 
-# --- LOGIKA EKRANÓW ---
+# --- 3. EKRAN LOGOWANIA ---
 
 if not st.session_state.zalogowany:
-    st.title("🛡️ System TALES - Logowanie")
+    st.title("🛡️ System TALES")
+    st.subheader("Logowanie do systemu")
     
-    with st.form("login_form"):
-        uzytkownik = st.text_input("Nazwisko lub Identyfikator:")
-        haslo_wpisane = st.text_input("Hasło:", type="password")
-        przycisk_wyslij = st.form_submit_button("Zaloguj się", use_container_width=True)
+    # Brak "with st.form" sprawia, że Enter w polach tekstowych działa od razu
+    uzytkownik = st.text_input("Nazwisko lub Identyfikator (np. admin):")
+    haslo_wpisane = st.text_input("Hasło:", type="password")
+    
+    # Przycisk logowania
+    kliknieto = st.button("Zaloguj się", use_container_width=True)
 
-        if przycisk_wyslij:
-            login_clean = uzytkownik.strip().lower()
-            pass_clean = haslo_wpisane.strip()
+    # Logika sprawdzania (uruchamia się po kliknięciu LUB po Enterze)
+    if kliknieto or (uzytkownik and haslo_wpisane):
+        login_clean = uzytkownik.strip().lower()
+        pass_clean = haslo_wpisane.strip()
 
-            # 1. ADMIN
-            if login_clean == "admin":
-                if check_admin_password(pass_clean):
-                    st.session_state.zalogowany = True
-                    st.session_state.rola = "admin"
-                    st.rerun()
-                else:
-                    st.error("Błędne hasło administratora.")
-            
-            # 2. UCZEŃ
-            elif os.path.exists("baza.xlsx"):
-                df_w, df_h = wczytaj_dane("baza.xlsx")
-                if df_w is not None:
-                    # Szukamy nazwiska
-                    nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
-                    if login_clean in nazwiska:
-                        idx = nazwiska.index(login_clean)
-                        wiersz = df_w.iloc[[idx]]
-                        lp = wiersz.iloc[0, 0]
-                        
-                        # Sprawdzamy hasło ucznia
-                        poprawne_haslo = str(df_h[df_h["Lp"] == lp]["Haslo"].values[0]).strip()
-                        if pass_clean == poprawne_haslo:
-                            st.session_state.zalogowany = True
-                            st.session_state.rola = "uczen"
-                            st.session_state.dane = wiersz
-                            st.rerun()
-                        else:
-                            st.error("Błędne hasło ucznia.")
-                    else:
-                        st.error("Nie znaleziono takiego nazwiska.")
-            else:
-                st.error("Brak bazy danych. Zaloguj się jako Admin i wgraj Excela.")
+        if login_clean == "admin":
+            if check_admin_password(pass_clean):
+                st.session_state.zalogowany = True
+                st.session_state.rola = "admin"
+                st.rerun()
+            elif kliknieto: # Pokazuj błąd tylko jeśli faktycznie kliknął lub zatwierdził oba pola
+                st.error("Błędne hasło administratora.")
+        
+        elif os.path.exists("baza.xlsx"):
+            df_w, df_h = wczytaj_dane("baza.xlsx")
+            if df_w is not None:
+                # Normalizacja listy nazwisk z Excela
+                nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
+                
+                if login_clean in nazwiska:
+                    idx = nazwiska.index(login_clean)
+                    wiersz = df_w.iloc[[idx]]
+                    lp = wiersz.iloc[0, 0]
+                    
+                    # Sprawdzanie hasła ucznia z Arkusza 2
+                    poprawne_haslo = str(df_h[df_h["Lp"] == lp]["Haslo"].values[0]).strip()
+                    if pass_clean == poprawne_haslo:
+                        st.session_state.zalogowany = True
+                        st.session_state.rola = "uczen"
+                        st.session_state.dane = wiersz
+                        st.rerun()
+                    elif kliknieto:
+                        st.error("Błędne hasło ucznia.")
+                elif kliknieto:
+                    st.error("Nie znaleziono takiego nazwiska.")
+        elif kliknieto:
+            st.warning("Baza danych nie jest wgrana. Zaloguj się jako admin.")
+
+# --- 4. WIDOK PO ZALOGOWANIU ---
 
 else:
-    # --- PANEL PO ZALOGOWANIU ---
+    # Przycisk wyloguj zawsze dostępny w pasku bocznym
     if st.sidebar.button("Wyloguj"):
         st.session_state.zalogowany = False
+        st.session_state.rola = None
+        st.session_state.dane = None
         st.rerun()
 
+    # PANEL NAUCZYCIELA
     if st.session_state.rola == "admin":
         st.header("👨‍🏫 Panel Nauczyciela")
-        plik = st.file_uploader("Wgraj plik Excel", type="xlsx")
+        st.write("Wgraj plik Excel, aby zaktualizować bazę ocen dla uczniów.")
+        
+        plik = st.file_uploader("Wybierz plik .xlsx", type="xlsx")
         if plik:
             with open("baza.xlsx", "wb") as f:
                 f.write(plik.getbuffer())
-            st.success("Plik baza.xlsx został zapisany!")
+            st.success("Plik został pomyślnie zapisany na serwerze!")
             st.balloons()
 
+    # PANEL UCZNIA
     elif st.session_state.rola == "uczen":
         w = st.session_state.dane
         st.header(f"Witaj, {w.iloc[0, 1]}!")
         
-        # Wyciągamy punkty (kolumna 15) i ocenę (kolumna 16)
-        punkty = float(w.iloc[0, 15])
-        ocena = str(w.iloc[0, 16])
-        
-        col1, col2 = st.columns(2)
-        col1.metric("Twoje punkty", f"{punkty} / 60")
-        col2.metric("Ocena", ocena)
-        st.progress(min(punkty/60, 1.0))
+        # Pobranie wyników (kolumny 15 i 16)
+        try:
+            punkty = float(w.iloc[0, 15])
+            ocena = str(w.iloc[0, 16])
+            max_pkt = 60 # Tutaj możesz wpisać swoją wartość max
+            
+            c1, c2 = st.columns(2)
+            c1.metric("Twoje punkty", f"{punkty} / {max_pkt}")
+            c2.metric("Ocena końcowa", ocena)
+            
+            st.progress(min(punkty/max_pkt, 1.0))
+            
+            if punkty >= 30:
+                st.balloons()
+        except:
+            st.error("Wystąpił problem z odczytem Twoich punktów z pliku.")
