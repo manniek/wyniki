@@ -6,6 +6,54 @@ import re
 
 st.set_page_config(page_title="System TALES", layout="wide")
 
+# --- CSS DLA KOLORU TŁA I STYLU ---
+st.markdown("""
+    <style>
+        /* Tło całej strony - nowoczesny, jasny błękit */
+        .stApp {
+            background-color: #f0f7ff;
+        }
+        
+        /* Kontener dla tabeli, żeby była biała i czytelna na niebieskim tle */
+        .table-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        .tales-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-family: sans-serif; 
+            font-size: 13px; 
+        }
+        
+        .tales-table thead th { 
+            background-color: #e1e9f5 !important; /* Niebieskawy odcień nagłówka */
+            color: #2c3e50;
+            border: 1px solid #c8d6e5 !important; 
+            padding: 10px 5px; 
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .tales-table td { 
+            border: 1px solid #eee; 
+            padding: 8px; 
+            text-align: center; 
+        }
+        
+        .tales-table tr:nth-child(even) { background-color: #fcfdfe; }
+        
+        /* Przycisk wyloguj - dopasowany do stylu */
+        .stButton>button {
+            border-radius: 5px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
 # --- 1. FUNKCJE ---
 
 def check_admin_password(input_password):
@@ -69,7 +117,6 @@ if not st.session_state.zalogowany:
 # --- 4. PO ZALOGOWANIU ---
 
 else:
-    # --- PANEL NAUCZYCIELA ---
     if st.session_state.rola == "admin":
         st.header("👨‍🏫 Panel Nauczyciela")
         tab1, tab2 = st.tabs(["📊 Podgląd Wyników", "📤 Zarządzanie Bazą"])
@@ -80,61 +127,7 @@ else:
                 with open("baza.xlsx", "wb") as f:
                     f.write(plik.getbuffer())
                 st.success("Baza zaktualizowana!")
-                if st.button("Odśwież stronę"):
-                    st.rerun()
+                st.rerun()
         
         with tab1:
             if os.path.exists("baza.xlsx"):
-                df_w, _ = wczytaj_dane("baza.xlsx")
-                if df_w is not None:
-                    # GÓRNY PASEK: Metryka po lewej, Wyloguj po prawej
-                    c_meta, c_spacer, c_btn = st.columns([3, 5, 2])
-                    with c_meta:
-                        st.metric("Liczba rekordów", len(df_w))
-                    with c_btn:
-                        st.write(" ") # wyrównanie w pionie
-                        if st.button("Wyloguj się", use_container_width=True):
-                            for key in list(st.session_state.keys()):
-                                del st.session_state[key]
-                            st.rerun()
-                    
-                    # Wyszukiwarka pod paskiem
-                    szukaj = st.text_input("Szukaj studenta:")
-                    
-                    # Obróbka danych
-                    widok = df_w.iloc[:, :-4].copy()
-                    widok = widok.fillna("")
-                    
-                    if szukaj:
-                        widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
-                    
-                    # Renderowanie tabeli HTML
-                    html_table = widok.to_html(index=False, classes='tales-table', border=0)
-                    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
-                    
-                    st.markdown("""
-                    <style>
-                        .tales-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
-                        .tales-table thead th { 
-                            background-color: #f0f2f6 !important; 
-                            color: #31333f;
-                            border: 1px solid #ddd !important; 
-                            padding: 10px 5px; 
-                            text-align: center;
-                            vertical-align: middle;
-                        }
-                        .tales-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-                        .tales-table tr:nth-child(even) { background-color: #f9f9f9; }
-                    </style>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown(html_table, unsafe_allow_html=True)
-                else:
-                    st.error("Problem z plikiem baza.xlsx")
-
-    # --- PANEL UCZNIA ---
-    elif st.session_state.rola == "uczen":
-        # Górny pasek dla ucznia
-        c_powitanie, c_spacer_u, c_logout_u = st.columns([6, 2, 2])
-        w = st.session_state.dane
-        c_
