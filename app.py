@@ -9,7 +9,7 @@ st.set_page_config(page_title="System TALES", layout="centered")
 
 def check_admin_password(input_password):
     # Hash dla: profesor123
-    stored_hash = "f7134375b06d87948a27a85c347d4e339a16f6b30f4060879c94132840001099"
+    stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
     # Zamieniamy to co wpiszesz na hash i porównujemy
     return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
@@ -123,3 +123,4 @@ else:
                 st.balloons()
         except:
             st.error("Wystąpił problem z odczytem Twoich punktów z pliku.")
+
