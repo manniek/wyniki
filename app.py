@@ -13,7 +13,6 @@ def check_admin_password(input_password):
 
 def wczytaj_dane(sciezka):
     try:
-        # Wczytujemy z 3 poziomami nagłówków
         df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
         df_h = pd.read_excel(sciezka, sheet_name='Arkusz2', header=None)
         df_h.columns = ["Lp", "Haslo"]
@@ -96,12 +95,29 @@ else:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
-                    # LOGIKA FILTROWANIA KOLUMN:
-                    # df_w.columns[1:-4] oznacza: weź od drugiej (index 1) do "minus czwartej" od końca
-                    widok = df_w.iloc[:, 1:-4] 
+                    # 1. Wycinamy niepotrzebne kolumny
+                    widok = df_w.iloc[:, 1:-4].copy() 
                     
-                    # Uproszczenie nazw kolumn (z 3-poziomowych na płaskie, biorąc ostatni człon)
-                    widok.columns = [str(c[-1]) if isinstance(c, tuple) else str(c) for c in widok.columns]
+                    # 2. Upraszczamy nazwy i naprawiamy duplikaty
+                    new_cols = []
+                    for c in widok.columns:
+                        name = str(c[-1]) if isinstance(c, tuple) else str(c)
+                        if "Unnamed" in name: # Obsługa pustych nagłówków
+                            name = "Kolumna"
+                        new_cols.append(name)
+                    
+                    # Sprytne nazywanie duplikatów:
+                    final_cols = []
+                    counts = {}
+                    for item in new_cols:
+                        if item in counts:
+                            counts[item] += 1
+                            final_cols.append(f"{item}.{counts[item]}")
+                        else:
+                            counts[item] = 0
+                            final_cols.append(item)
+                    
+                    widok.columns = final_cols
                     
                     st.metric("Liczba studentów", len(widok))
                     szukaj = st.text_input("Szukaj studenta:")
