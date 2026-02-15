@@ -32,23 +32,31 @@ if not st.session_state["zalogowany"]:
         haslo_wpisane = st.text_input("Hasło:", type="password")
         przycisk = st.form_submit_button("Zaloguj się", use_container_width=True)
 
-        if przycisk:
-            # Sprawdzanie Admina
-            if uzytkownik.lower() == "admin" and check_admin_password(haslo_wpisane):
-                st.session_state["zalogowany"] = True
-                st.session_state["rola"] = "admin"
-                st.rerun()
+if przycisk:
+            # 1. NAJPIERW SPRAWDZAMY ADMINA (Zanim zajrzymy do Excela)
+            uzytkownik_wpisany = uzytkownik.strip().lower()
             
-            # Sprawdzanie Ucznia
+            if uzytkownik_wpisany == "admin":
+                if check_admin_password(haslo_wpisane.strip()):
+                    st.session_state["zalogowany"] = True
+                    st.session_state["rola"] = "admin"
+                    st.rerun()
+                else:
+                    st.error("Błędne hasło administratora.")
+            
+            # 2. JEŚLI TO NIE ADMIN, SZUKAMY UCZNIA W EXCELU
             elif os.path.exists("baza.xlsx"):
                 df_w, df_h = wczytaj_dane("baza.xlsx")
-                # Szukamy nazwiska (ignorujemy wielkość liter i spacje na końcach)
-                df_w_copy = df_w.copy()
-                df_w_copy.iloc[:, 1] = df_w_copy.iloc[:, 1].astype(str).str.strip()
                 
-                if uzytkownik.strip() in df_w_copy.iloc[:, 1].values:
-                    wiersz = df_w_copy[df_w_copy.iloc[:, 1] == uzytkownik.strip()]
+                # Normalizacja danych z Excela (małe litery, brak spacji)
+                nazwiska_z_bazy = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
+                uzytkownik_clean = uzytkownik.strip().lower()
+                
+                if uzytkownik_clean in nazwiska_z_bazy:
+                    idx = nazwiska_z_bazy.index(uzytkownik_clean)
+                    wiersz = df_w.iloc[[idx]]
                     lp = wiersz.iloc[0, 0]
+                    
                     poprawne_haslo_ucznia = str(df_h[df_h["Lp"] == lp]["Haslo"].values[0]).strip()
                     
                     if haslo_wpisane.strip() == poprawne_haslo_ucznia:
@@ -59,9 +67,9 @@ if not st.session_state["zalogowany"]:
                     else:
                         st.error("Błędne hasło ucznia.")
                 else:
-                    st.error("Nie znaleziono takiego użytkownika.")
+                    st.error(f"Nie znaleziono użytkownika: '{uzytkownik}'")
             else:
-                st.error("Błąd: Baza danych nie istnieje lub błędne dane.")
+                st.error("Baza danych (plik Excel) nie została jeszcze wgrana.")
 
 # --- EKRAN PO ZALOGOWANIU ---
 else:
@@ -93,3 +101,4 @@ else:
         
         st.progress(min(punkty/max_pkt, 1.0))
         if punkty >= 30: st.balloons()
+
