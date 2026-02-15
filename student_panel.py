@@ -19,7 +19,6 @@ def show_panel(wiersz_ucznia):
     st.markdown("#### Twoje wyniki szczegółowe:")
     st.markdown('<div class="table-container">', unsafe_allow_html=True)
     
-    # Wybieramy dane do wyświetlenia (bez kolumn technicznych)
     widok_ucznia = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
     html_table = widok_ucznia.to_html(index=False, classes='tales-table', border=0)
     html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
@@ -28,31 +27,39 @@ def show_panel(wiersz_ucznia):
 
     st.write("") 
 
-    # 3. ANALIZA DZIAŁÓW (Logika MultiIndex)
-    # Pobieramy sumę całkowitą (kolumna 15)
+    # 3. POPRAWIONA ANALIZA DZIAŁÓW
     suma_total = float(wiersz_ucznia.iloc[0, 15])
     
-    # Słownik na działy: { 'Nazwa Działu': suma_punktów_w_dziale }
-    wyniki_dzialow = {}
-    
-    # Interujemy po kolumnach od 3 do 14 (tam gdzie są punkty za zadania)
-    for col_idx in range(3, 15):
-        nazwa_kol = wiersz_ucznia.columns[col_idx]
-        # Pobieramy nazwę działu (zakładam poziom 1 w MultiIndex: np. "Ciągi")
-        dzial = nazwa_kol[1] if isinstance(nazwa_kol, tuple) else "Inne"
-        
-        wartosc = wiersz_ucznia.iloc[0, col_idx]
-        try:
-            punktacja = float(wartosc) if wartosc != "" else 0.0
-        except:
-            punktacja = 0.0
+    zdane = []
+    do_zrobienia = []
+
+    # Definiujemy nazwy działów, które nas interesują
+    # Możesz je tu wpisać ręcznie, żeby mieć 100% pewności
+    lista_dzialow = ["log+zb", "ciągi", "f.wykładnicza", "trygonometria"] # dopisz resztę nazw z Excela
+
+    # Iterujemy po kolumnach, szukając wyników dla tych działów
+    for col_name in wiersz_ucznia.columns:
+        # Sprawdzamy czy nazwa działu (poziom 1) jest na liście i czy to kolumna "wynikowa"
+        # Często w MultiIndex kolumna sumaryczna ma nazwę zadania pustą lub taką samą jak dział
+        if isinstance(col_name, tuple):
+            dzial_nazwa = col_name[1] 
+            zadanie_nazwa = col_name[2]
             
-        wyniki_dzialow[dzial] = wyniki_dzialow.get(dzial, 0.0) + punktacja
+            # Logika: Jeśli kolumna nazywa się tak samo jak dział lub zawiera "Suma" / jest pusta
+            if dzial_nazwa in lista_dzialow and ("Unnamed" in str(zadanie_nazwa) or zadanie_nazwa == ""):
+                idx = wiersz_ucznia.columns.get_loc(col_name)
+                wartosc = wiersz_ucznia.iloc[0, idx]
+                
+                try:
+                    wynik = float(wartosc) if wartosc != "" else 0.0
+                    if wynik >= 4.5:
+                        if dzial_nazwa not in zdane: zdane.append(dzial_nazwa)
+                    else:
+                        if dzial_nazwa not in do_zrobienia: do_zrobienia.append(dzial_nazwa)
+                except:
+                    continue
 
-    zdane = [d for d, punkty in wyniki_dzialow.items() if punkty >= 4.5]
-    do_zrobienia = [d for d, punkty in wyniki_dzialow.items() if punkty < 4.5]
-
-    # 4. WYŚWIETLANIE DWÓCH POŁÓW
+    # 4. WYŚWIETLANIE
     col_lewa, col_prawa = st.columns(2)
 
     with col_lewa:
