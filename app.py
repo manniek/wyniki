@@ -124,6 +124,54 @@ else:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
+                    # GÓRNY PASEK
                     c_meta, c_spacer, c_btn = st.columns([3, 5, 2])
                     with c_meta:
-                        st.
+                        st.metric("Liczba rekordów", len(df_w))
+                    with c_btn:
+                        st.write(" ")
+                        if st.button("Wyloguj się", use_container_width=True):
+                            for key in list(st.session_state.keys()):
+                                del st.session_state[key]
+                            st.rerun()
+                    
+                    szukaj = st.text_input("Szukaj studenta:")
+                    
+                    # Przygotowanie tabeli
+                    widok = df_w.iloc[:, :-4].copy()
+                    widok = widok.fillna("")
+                    
+                    if szukaj:
+                        widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
+                    
+                    # Generowanie HTML
+                    html_table = widok.to_html(index=False, classes='tales-table', border=0)
+                    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
+                    
+                    st.markdown(f'<div class="table-container">{html_table}</div>', unsafe_allow_html=True)
+                else:
+                    st.error("Błąd pliku.")
+            else:
+                st.info("Baza jeszcze nie została wgrana.")
+
+    elif st.session_state.rola == "uczen":
+        c_pow, c_sp, c_log = st.columns([6, 2, 2])
+        w = st.session_state.dane
+        c_pow.header(f"Witaj, {w.iloc[0, 1]}!")
+        
+        with c_log:
+            st.write(" ")
+            if st.button("Wyloguj", use_container_width=True):
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.rerun()
+
+        st.markdown('<div class="table-container">', unsafe_allow_html=True)
+        try:
+            p_val = w.iloc[0, 15]
+            o_val = w.iloc[0, 16]
+            st.metric("Twoje punkty", f"{p_val} / 60")
+            st.metric("Ocena", o_val)
+        except:
+            st.error("Błąd odczytu danych.")
+        st.markdown('</div>', unsafe_allow_html=True)
