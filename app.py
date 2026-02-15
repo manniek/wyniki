@@ -92,8 +92,9 @@ else:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
-                    # Wycinamy kolumny (wyrzucamy 4 ostatnie)
+                    # 1. Tniemy kolumny i czyścimy NaN
                     widok = df_w.iloc[:, :-4].copy()
+                    widok = widok.fillna("") # TO USUWA NaN
                     
                     st.metric("Liczba rekordów", len(df_w))
                     szukaj = st.text_input("Szukaj studenta:")
@@ -101,28 +102,25 @@ else:
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    # Generowanie HTML
-                    html_table = widok.to_html(classes='tales-table', border=0)
+                    # 2. Generowanie HTML z poprawionymi nagłówkami
+                    html_table = widok.to_html(classes='tales-table', border=0, na_rep="")
                     
-                    # Usuwamy techniczne napisy Unnamed
+                    # 3. Czyścimy techniczne nazwy Unnamed tak, by Lp. zostało w ostatnim wierszu
+                    # Usuwamy Unnamed z zachowaniem struktury wierszy
                     html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
                     
-                    # CSS do wyśrodkowania i przesunięcia Lp, Nazwisko itp na dół
                     st.markdown("""
                     <style>
                         .tales-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
-                        /* Styl dla wszystkich komórek nagłówka */
                         .tales-table th { 
                             background-color: #f0f2f6; 
                             border: 1px solid #ddd; 
                             padding: 8px; 
                             text-align: center;
-                            vertical-align: bottom; /* To spycha Lp, Nazwisko itp na dół */
-                        }
-                        /* Wyjątek dla Działów - wyśrodkowanie w pionie i poziomie */
-                        .tales-table tr:first-child th {
                             vertical-align: middle;
                         }
+                        /* Stylizacja pustych komórek nagłówka, by Lp wyglądało na scalone */
+                        .tales-table th:empty { border: none; background-color: transparent; }
                         .tales-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
                         .tales-table tr:nth-child(even) { background-color: #f9f9f9; }
                     </style>
