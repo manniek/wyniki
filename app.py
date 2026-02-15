@@ -9,12 +9,9 @@ st.set_page_config(page_title="System TALES", layout="wide")
 # --- CSS DLA KOLORU TŁA I STYLU ---
 st.markdown("""
     <style>
-        /* Tło całej strony - nowoczesny, jasny błękit */
         .stApp {
             background-color: #f0f7ff;
         }
-        
-        /* Kontener dla tabeli, żeby była biała i czytelna na niebieskim tle */
         .table-container {
             background-color: white;
             padding: 20px;
@@ -22,32 +19,26 @@ st.markdown("""
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin-top: 20px;
         }
-
         .tales-table { 
             width: 100%; 
             border-collapse: collapse; 
             font-family: sans-serif; 
             font-size: 13px; 
         }
-        
         .tales-table thead th { 
-            background-color: #e1e9f5 !important; /* Niebieskawy odcień nagłówka */
+            background-color: #e1e9f5 !important; 
             color: #2c3e50;
             border: 1px solid #c8d6e5 !important; 
             padding: 10px 5px; 
             text-align: center;
             vertical-align: middle;
         }
-        
         .tales-table td { 
             border: 1px solid #eee; 
             padding: 8px; 
             text-align: center; 
         }
-        
         .tales-table tr:nth-child(even) { background-color: #fcfdfe; }
-        
-        /* Przycisk wyloguj - dopasowany do stylu */
         .stButton>button {
             border-radius: 5px;
         }
@@ -131,3 +122,8 @@ else:
         
         with tab1:
             if os.path.exists("baza.xlsx"):
+                df_w, _ = wczytaj_dane("baza.xlsx")
+                if df_w is not None:
+                    c_meta, c_spacer, c_btn = st.columns([3, 5, 2])
+                    with c_meta:
+                        st.
