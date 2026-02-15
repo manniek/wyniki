@@ -69,13 +69,7 @@ if not st.session_state.zalogowany:
 # --- 4. PO ZALOGOWANIU ---
 
 else:
-    with st.sidebar:
-        st.write(f"Zalogowano jako: **{st.session_state.rola}**")
-        if st.button("Wyloguj"):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-
+    # --- PANEL NAUCZYCIELA ---
     if st.session_state.rola == "admin":
         st.header("👨‍🏫 Panel Nauczyciela")
         tab1, tab2 = st.tabs(["📊 Podgląd Wyników", "📤 Zarządzanie Bazą"])
@@ -86,69 +80,34 @@ else:
                 with open("baza.xlsx", "wb") as f:
                     f.write(plik.getbuffer())
                 st.success("Baza zaktualizowana!")
-                st.balloons()
+                if st.button("Odśwież dane"):
+                    st.rerun()
         
         with tab1:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
-                    # 1. Tniemy kolumny i czyścimy NaN
+                    # Linia z liczbą rekordów i przyciskiem wyloguj
+                    col_stats, col_empty, col_logout = st.columns([2, 6, 2])
+                    
+                    with col_stats:
+                        st.metric("Liczba rekordów", len(df_w))
+                    
+                    with col_logout:
+                        st.write("") # Odstęp, żeby wyrównać do dołu metryki
+                        if st.button("Wyloguj się", use_container_width=True):
+                            for key in list(st.session_state.keys()):
+                                del st.session_state[key]
+                            st.rerun()
+
+                    # Wyszukiwarka
                     widok = df_w.iloc[:, :-4].copy()
                     widok = widok.fillna("")
-                    
-                    st.metric("Liczba rekordów", len(df_w))
                     szukaj = st.text_input("Szukaj studenta:")
                     
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    # 2. CAŁKOWITE USUNIĘCIE INDEKSU (tej pierwszej kolumny 0,1,2...)
-                    # Resetujemy indeks i go wyrzucamy przed generowaniem HTML
+                    # Generowanie HTML
                     html_table = widok.to_html(index=False, classes='tales-table', border=0)
-                    
-                    # 3. Usuwamy techniczne napisy Unnamed
                     html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
-                    
-                    # 4. Stylizacja CSS (poprawka kolorów i wyrównania)
-                    st.markdown("""
-                    <style>
-                        .tales-table { 
-                            width: 100%; 
-                            border-collapse: collapse; 
-                            font-family: sans-serif; 
-                            font-size: 13px; 
-                        }
-                        /* Wszystkie nagłówki (th) mają mieć szare tło */
-                        .tales-table thead th { 
-                            background-color: #f0f2f6 !important; 
-                            color: #31333f;
-                            border: 1px solid #ddd !important; 
-                            padding: 10px 5px; 
-                            text-align: center;
-                            vertical-align: middle;
-                        }
-                        .tales-table td { 
-                            border: 1px solid #ddd; 
-                            padding: 8px; 
-                            text-align: center; 
-                        }
-                        .tales-table tr:nth-child(even) { background-color: #f9f9f9; }
-                        /* Ukrycie pustych nazw poziomów, jeśli regex coś zostawił */
-                        .tales-table th:empty { background-color: #f0f2f6 !important; }
-                    </style>
-                    """, unsafe_allow_html=True)
-                    
-                    st.write(html_table, unsafe_allow_html=True)
-                else:
-                    st.error("Błąd pliku.")
-
-    elif st.session_state.rola == "uczen":
-        w = st.session_state.dane
-        st.header(f"Witaj, {w.iloc[0, 1]}!")
-        try:
-            punkty = float(w.iloc[0, 15])
-            ocena = str(w.iloc[0, 16])
-            st.metric("Twoje punkty", f"{punkty} / 60")
-            st.metric("Ocena", ocena)
-        except:
-            st.error("Błąd odczytu danych.")
