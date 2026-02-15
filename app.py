@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import hashlib
 
-st.set_page_config(page_title="System TALES", layout="wide") 
+st.set_page_config(page_title="System TALES", layout="wide")
 
 # --- 1. FUNKCJE ---
 
@@ -64,8 +64,6 @@ if not st.session_state.zalogowany:
                         st.error("Błędne hasło.")
                 else:
                     st.error("Nie znaleziono nazwiska.")
-        else:
-            st.warning("Baza nie istnieje.")
 
 # --- 4. PO ZALOGOWANIU ---
 
@@ -93,37 +91,41 @@ else:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
-                    # 1. Tniemy kolumny (wyrzucamy 4 ostatnie)
+                    # Tniemy kolumny (wyrzucamy 4 ostatnie)
                     widok = df_w.iloc[:, :-4].copy()
-                    
-                    # 2. CZYSZCZENIE NAGŁÓWKÓW (Usuwamy "Unnamed")
-                    nowe_naglowki = []
-                    for col in widok.columns:
-                        # Zbieramy tylko te części nagłówka, które NIE zawierają słowa "Unnamed"
-                        czyste = [str(poziom) for poziom in col if "Unnamed" not in str(poziom)]
-                        # Sklejamy je (np. "Działy - Logika - a")
-                        nowe_naglowki.append(" | ".join(czyste))
-                    
-                    widok.columns = nowe_naglowki # Podmieniamy nazwy na czyste
                     
                     st.metric("Liczba rekordów", len(df_w))
                     szukaj = st.text_input("Szukaj studenta:")
+                    
                     if szukaj:
-                        # Szukamy w 2. kolumnie (Nazwisko)
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    st.dataframe(widok, use_container_width=True, hide_index=True)
+                    # MAGIA: Wyświetlamy jako HTML, żeby zachować poziomy nagłówków bez "Unnamed"
+                    # stylizujemy tabelę, żeby wyglądała jak w Excelu
+                    html_table = widok.to_html(classes='table table-striped', border=0)
+                    
+                    # Usuwamy napisy "Unnamed: ...", które Pandas wstawia do HTMLa
+                    import re
+                    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
+                    
+                    st.markdown("""
+                    <style>
+                        table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
+                        th { background-color: #f0f2f6; border: 1px solid #ddd; padding: 8px; text-align: center; }
+                        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                        tr:nth-child(even) { background-color: #f9f9f9; }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    st.write(html_table, unsafe_allow_html=True)
+                else:
+                    st.error("Błąd pliku.")
 
     elif st.session_state.rola == "uczen":
+        # Widok ucznia zostawiamy prosty
         w = st.session_state.dane
         st.header(f"Witaj, {w.iloc[0, 1]}!")
-        try:
-            # Zakładamy stałe pozycje dla punktów (15) i oceny (16)
-            punkty = float(w.iloc[0, 15])
-            ocena = str(w.iloc[0, 16])
-            c1, c2 = st.columns(2)
-            c1.metric("Twoje punkty", f"{punkty} / 60")
-            c2.metric("Ocena", ocena)
-            st.progress(min(punkty/60, 1.0))
-        except:
-            st.error("Błąd odczytu.")
+        punkty = float(w.iloc[0, 15])
+        ocena = str(w.iloc[0, 16])
+        st.metric("Twoje punkty", f"{punkty} / 60")
+        st.metric("Ocena", ocena)
