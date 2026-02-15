@@ -95,34 +95,24 @@ else:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
-                    # 1. Wycinamy niepotrzebne kolumny
-                    widok = df_w.iloc[:, 1:-4].copy() 
+                    # Wybieramy zakres kolumn: od Lp (0) do Ocena (16)
+                    # iloc[:, 0:17] bierze kolumny o indeksach od 0 do 16 włącznie
+                    widok = df_w.iloc[:, 0:17].copy() 
                     
-                    # 2. Upraszczamy nazwy i naprawiamy duplikaty
-                    new_cols = []
-                    for c in widok.columns:
-                        name = str(c[-1]) if isinstance(c, tuple) else str(c)
-                        if "Unnamed" in name: # Obsługa pustych nagłówków
-                            name = "Kolumna"
-                        new_cols.append(name)
+                    # Łączymy poziomy nagłówków, aby uniknąć duplikatów (np. "Logika - Zad 1")
+                    # Omijamy "Unnamed", żeby nazwy były czyste
+                    nowe_nazwy = []
+                    for col in widok.columns:
+                        czyste_czesci = [str(poziom) for poziom in col if "Unnamed" not in str(poziom)]
+                        nowe_nazwy.append(" - ".join(czyste_czesci))
                     
-                    # Sprytne nazywanie duplikatów:
-                    final_cols = []
-                    counts = {}
-                    for item in new_cols:
-                        if item in counts:
-                            counts[item] += 1
-                            final_cols.append(f"{item}.{counts[item]}")
-                        else:
-                            counts[item] = 0
-                            final_cols.append(item)
-                    
-                    widok.columns = final_cols
+                    widok.columns = nowe_nazwy
                     
                     st.metric("Liczba studentów", len(widok))
-                    szukaj = st.text_input("Szukaj studenta:")
+                    szukaj = st.text_input("Szukaj studenta (po nazwisku):")
                     if szukaj:
-                        widok = widok[widok.iloc[:, 0].astype(str).str.contains(szukaj, case=False)]
+                        # Szukamy w drugiej kolumnie (Nazwisko)
+                        widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
                     st.dataframe(widok, use_container_width=True)
                 else:
