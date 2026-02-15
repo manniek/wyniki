@@ -101,18 +101,32 @@ else:
                 st.success("Plik baza.xlsx został zaktualizowany!")
                 st.balloons()
         
-        with tab1:
+with tab1:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
+                    # 1. Wycinamy zakres (od kolumny nr 1 do 12 włącznie)
+                    widok = df_w.iloc[:, 1:13].copy()
+                    
+                    # 2. NAPRAWA NAGŁÓWKÓW (to usunie liczby 0, 1, 2...)
+                    nowe_nazwy = []
+                    for col in widok.columns:
+                        # Sklejamy poziomy nagłówka (np. "Logika - Zadanie 1")
+                        # Pomijamy puste pola "Unnamed"
+                        czesci = [str(p) for p in col if "Unnamed" not in str(p)]
+                        nowe_nazwy.append(" - ".join(czesci) if czesci else "Dane")
+                    
+                    widok.columns = nowe_nazwy # Przypisujemy ładne nazwy do kolumn
+
                     st.metric("Liczba rekordów", len(df_w))
                     szukaj = st.text_input("Szukaj studenta (nazwisko):")
                     
-                    widok = df_w.iloc[:, 1:13].copy()
                     if szukaj:
-                        widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
+                        # Szukamy w pierwszej kolumnie widoku (bo Lp zostało odcięte)
+                        widok = widok[widok.iloc[:, 0].astype(str).str.contains(szukaj, case=False)]
                     
-                    st.dataframe(widok, use_container_width=True)
+                    # 3. WYŚWIETLANIE (hide_index=True usuwa liczby z lewej strony)
+                    st.dataframe(widok, use_container_width=True, hide_index=True)
                 else:
                     st.error("Problem z wyświetleniem pliku.")
             else:
@@ -134,4 +148,5 @@ else:
             st.progress(min(punkty/60, 1.0))
         except:
             st.error("Błąd podczas odczytu Twoich punktów.")
+
 
