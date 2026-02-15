@@ -5,13 +5,12 @@ import hashlib
 
 st.set_page_config(page_title="System TALES", layout="centered")
 
-# --- KONFIGURACJA I FUNKCJE ---
+# --- FUNKCJE ---
 
 def check_admin_password(input_password):
     # Hash dla: profesor123
     stored_hash = "f7134375b06d87948a27a85c347d4e339a16f6b30f4060879c94132840001099"
-    input_hash = hashlib.sha256(input_password.encode()).hexdigest()
-    return input_hash == stored_hash
+    return hashlib.sha256(input_password.encode()).hexdigest() == stored_hash
 
 def wczytaj_dane(sciezka):
     df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
@@ -19,79 +18,78 @@ def wczytaj_dane(sciezka):
     df_h.columns = ["Lp", "Haslo"]
     return df_w, df_h
 
-# --- INTERFEJS LOGOWANIA ---
+# --- INICJALIZACJA SESJI (Schowek) ---
+if "zalogowany" not in st.session_state:
+    st.session_state["zalogowany"] = False
+    st.session_state["rola"] = None
+    st.session_state["dane"] = None
 
-st.title("🛡️ System Weryfikacji Wyników")
-st.write("Wprowadź swoje dane, aby uzyskać dostęp.")
+# --- EKRAN LOGOWANIA ---
+if not st.session_state["zalogowany"]:
+    st.title("🛡️ System TALES - Logowanie")
+    with st.form("formularz_logowania"):
+        uzytkownik = st.text_input("Nazwisko lub Identyfikator:")
+        haslo_wpisane = st.text_input("Hasło:", type="password")
+        przycisk = st.form_submit_button("Zaloguj się", use_container_width=True)
 
-with st.container(border=True):
-    login = st.text_input("Nazwisko lub Identyfikator:")
-    haslo = st.text_input("Hasło:", type="password")
-    zaloguj = st.button("Zaloguj się", use_container_width=True)
-
-# --- LOGIKA PO KLIKNIĘCIU ---
-
-if zaloguj:
-    # 1. SPRAWDZAMY CZY TO ADMIN
-    if login.lower() == "admin":
-        if check_admin_password(haslo):
-            st.session_state["role"] = "admin"
-            st.success("Zalogowano jako Administrator.")
-        else:
-            st.error("Błędne hasło administratora.")
-    
-    # 2. SPRAWDZAMY CZY TO UCZEŃ
-    else:
-        if os.path.exists("baza.xlsx"):
-            df_w, df_h = wczytaj_dane("baza.xlsx")
-            # Szukamy czy nazwisko istnieje (ignorujemy wielkość liter przy szukaniu)
-            lista_nazwisk = df_w.iloc[:, 1].astype(str).tolist()
+        if przycisk:
+            # Sprawdzanie Admina
+            if uzytkownik.lower() == "admin" and check_admin_password(haslo_wpisane):
+                st.session_state["zalogowany"] = True
+                st.session_state["rola"] = "admin"
+                st.rerun()
             
-            if login in lista_nazwisk:
-                wiersz = df_w[df_w.iloc[:, 1] == login]
-                lp_ucznia = wiersz.iloc[0, 0]
-                prawdziwe_haslo = str(df_h[df_h["Lp"] == lp_ucznia]["Haslo"].values[0])
+            # Sprawdzanie Ucznia
+            elif os.path.exists("baza.xlsx"):
+                df_w, df_h = wczytaj_dane("baza.xlsx")
+                # Szukamy nazwiska (ignorujemy wielkość liter i spacje na końcach)
+                df_w_copy = df_w.copy()
+                df_w_copy.iloc[:, 1] = df_w_copy.iloc[:, 1].astype(str).str.strip()
                 
-                if haslo == prawdziwe_haslo:
-                    st.session_state["role"] = "user"
-                    st.session_state["user_data"] = wiersz
-                    st.success(f"Witaj {login}!")
+                if uzytkownik.strip() in df_w_copy.iloc[:, 1].values:
+                    wiersz = df_w_copy[df_w_copy.iloc[:, 1] == uzytkownik.strip()]
+                    lp = wiersz.iloc[0, 0]
+                    poprawne_haslo_ucznia = str(df_h[df_h["Lp"] == lp]["Haslo"].values[0]).strip()
+                    
+                    if haslo_wpisane.strip() == poprawne_haslo_ucznia:
+                        st.session_state["zalogowany"] = True
+                        st.session_state["rola"] = "uczen"
+                        st.session_state["dane"] = wiersz
+                        st.rerun()
+                    else:
+                        st.error("Błędne hasło ucznia.")
                 else:
-                    st.error("Nieprawidłowe hasło ucznia.")
+                    st.error("Nie znaleziono takiego użytkownika.")
             else:
-                st.error("Nie znaleziono takiego nazwiska w bazie.")
-        else:
-            st.warning("Baza danych nie jest dostępna. Skontaktuj się z wykładowcą.")
+                st.error("Błąd: Baza danych nie istnieje lub błędne dane.")
 
-# --- WYŚWIETLANIE TREŚCI ZALEŻNIE OD ROLI ---
+# --- EKRAN PO ZALOGOWANIU ---
+else:
+    if st.sidebar.button("Wyloguj"):
+        st.session_state["zalogowany"] = False
+        st.rerun()
 
-if "role" in st.session_state:
-    st.divider()
-    
-    if st.session_state["role"] == "admin":
-        st.subheader("📁 Panel Zarządzania")
-        plik = st.file_uploader("Wgraj nowy plik ocen (.xlsx)", type="xlsx")
+    if st.session_state["rola"] == "admin":
+        st.header("👨‍🏫 Panel Nauczyciela")
+        plik = st.file_uploader("Wgraj plik Excel", type="xlsx")
         if plik:
             with open("baza.xlsx", "wb") as f:
                 f.write(plik.getbuffer())
-            st.success("Plik został pomyślnie zapisany!")
+            st.success("Baza zaktualizowana!")
             st.balloons()
-            
-    elif st.session_state["role"] == "user":
-        wiersz = st.session_state["user_data"]
-        suma_pkt = float(wiersz.iloc[0, 15])
+
+    elif st.session_state["rola"] == "uczen":
+        wiersz = st.session_state["dane"]
+        st.header(f"Witaj, {wiersz.iloc[0, 1]}!")
+        
+        # Wyświetlanie wyników
+        punkty = float(wiersz.iloc[0, 15])
         ocena = str(wiersz.iloc[0, 16])
         max_pkt = 60
-
-        # Wygląd wyników
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Twoja Ocena", ocena)
-        with col2:
-            st.metric("Punkty", f"{suma_pkt} / {max_pkt}")
         
-        st.progress(min(suma_pkt/max_pkt, 1.0))
+        c1, c2 = st.columns(2)
+        c1.metric("Twoje punkty", f"{punkty} / {max_pkt}")
+        c2.metric("Ocena końcowa", ocena)
         
-        if suma_pkt >= 50:
-            st.confetti = True # Streamlit nie ma wbudowanego confetti poza balloons, ale to miły akcent w opisie
-            st.balloons()
+        st.progress(min(punkty/max_pkt, 1.0))
+        if punkty >= 30: st.balloons()
