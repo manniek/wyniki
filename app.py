@@ -108,7 +108,7 @@ else:
                     st.metric("Liczba rekordów", len(df_w))
                     szukaj = st.text_input("Szukaj studenta (nazwisko):")
                     
-                    widok = df_w.copy()
+                    widok = df_w.iloc[:, 1:13].copy()
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
@@ -134,3 +134,4 @@ else:
             st.progress(min(punkty/60, 1.0))
         except:
             st.error("Błąd podczas odczytu Twoich punktów.")
+
