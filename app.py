@@ -47,13 +47,50 @@ if not st.session_state.zalogowany:
         login_clean = uzytkownik.strip().lower()
         pass_clean = haslo_wpisane.strip()
 
-        if login_clean == "admin":
-            if check_admin_password(pass_clean):
-                st.session_state.zalogowany = True
-                st.session_state.rola = "admin"
-                st.rerun()
-            elif kliknieto: # Pokazuj błąd tylko jeśli faktycznie kliknął lub zatwierdził oba pola
-                st.error("Błędne hasło administratora.")
+        if st.session_state.rola == "admin":
+        st.header("👨‍🏫 Panel Nauczyciela")
+        
+        # Zakładki, żeby oddzielić wgrywanie od przeglądania
+        tab1, tab2 = st.tabs(["📊 Podgląd Wyników", "📤 Wgraj Nową Bazę"])
+        
+        with tab2:
+            st.write("Wgraj plik Excel, aby zaktualizować bazę ocen.")
+            plik = st.file_uploader("Wybierz plik .xlsx", type="xlsx")
+            if plik:
+                with open("baza.xlsx", "wb") as f:
+                    f.write(plik.getbuffer())
+                st.success("Plik został pomyślnie zapisany!")
+                st.balloons()
+        
+        with tab1:
+            if os.path.exists("baza.xlsx"):
+                df_w, _ = wczytaj_dane("baza.xlsx")
+                if df_w is not None:
+                    # Wyświetlamy statystyki
+                    st.metric("Liczba studentów w bazie", len(df_w))
+                    
+                    # Pole wyszukiwania
+                    szukaj = st.text_input("Filtruj listę (wpisz nazwisko):")
+                    
+                    # Przygotowanie tabeli do wyświetlenia (upraszczamy nagłówki)
+                    tabela_widok = df_w.copy()
+                    
+                    if szukaj:
+                        tabela_widok = tabela_widok[tabela_widok.iloc[:, 1].str.contains(szukaj, case=False, na=False)]
+                    
+                    # Wyświetlenie tabeli
+                    st.dataframe(
+                        tabela_widok, 
+                        use_container_width=True,
+                        column_config={
+                            tabela_widok.columns[15]: "Suma PKT",
+                            tabela_widok.columns[16]: "Ocena"
+                        }
+                    )
+                else:
+                    st.error("Błąd odczytu danych z pliku.")
+            else:
+                st.info("Baza danych jest pusta. Przejdź do zakładki 'Wgraj Nową Bazę'.")
         
         elif os.path.exists("baza.xlsx"):
             df_w, df_h = wczytaj_dane("baza.xlsx")
@@ -123,4 +160,5 @@ else:
                 st.balloons()
         except:
             st.error("Wystąpił problem z odczytem Twoich punktów z pliku.")
+
 
