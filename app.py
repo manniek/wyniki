@@ -94,7 +94,7 @@ else:
                 if df_w is not None:
                     # 1. Tniemy kolumny i czyścimy NaN
                     widok = df_w.iloc[:, :-4].copy()
-                    widok = widok.fillna("") # TO USUWA NaN
+                    widok = widok.fillna("")
                     
                     st.metric("Liczba rekordów", len(df_w))
                     szukaj = st.text_input("Szukaj studenta:")
@@ -102,41 +102,8 @@ else:
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    # 2. Generowanie HTML z poprawionymi nagłówkami
-                    html_table = widok.to_html(classes='tales-table', border=0, na_rep="")
+                    # 2. Generowanie HTML - KLUCZ: index=False usuwa tę pierwszą kolumnę z numerami
+                    html_table = widok.to_html(classes='tales-table', border=0, na_rep="", index=False)
                     
-                    # 3. Czyścimy techniczne nazwy Unnamed tak, by Lp. zostało w ostatnim wierszu
-                    # Usuwamy Unnamed z zachowaniem struktury wierszy
-                    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
-                    
-                    st.markdown("""
-                    <style>
-                        .tales-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
-                        .tales-table th { 
-                            background-color: #f0f2f6; 
-                            border: 1px solid #ddd; 
-                            padding: 8px; 
-                            text-align: center;
-                            vertical-align: middle;
-                        }
-                        /* Stylizacja pustych komórek nagłówka, by Lp wyglądało na scalone */
-                        .tales-table th:empty { border: none; background-color: transparent; }
-                        .tales-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-                        .tales-table tr:nth-child(even) { background-color: #f9f9f9; }
-                    </style>
-                    """, unsafe_allow_html=True)
-                    
-                    st.write(html_table, unsafe_allow_html=True)
-                else:
-                    st.error("Błąd pliku.")
-
-    elif st.session_state.rola == "uczen":
-        w = st.session_state.dane
-        st.header(f"Witaj, {w.iloc[0, 1]}!")
-        try:
-            punkty = float(w.iloc[0, 15])
-            ocena = str(w.iloc[0, 16])
-            st.metric("Twoje punkty", f"{punkty} / 60")
-            st.metric("Ocena", ocena)
-        except:
-            st.error("Błąd odczytu danych.")
+                    # 3. Usuwamy techniczne napisy Unnamed
+                    html_table =
