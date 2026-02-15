@@ -102,5 +102,5 @@ else:
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    # 2. Generowanie HTML bez indeksu
-                    html_table = widok.to_html(index=False, classes='tales-table', border=0)
+                    # 2. CAŁKOWITE USUNIĘCIE INDEKSU
+                    html_table = widok.to_html(index=False
