@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import hashlib
+import re
 
 st.set_page_config(page_title="System TALES", layout="wide")
 
@@ -91,7 +92,7 @@ else:
             if os.path.exists("baza.xlsx"):
                 df_w, _ = wczytaj_dane("baza.xlsx")
                 if df_w is not None:
-                    # Tniemy kolumny (wyrzucamy 4 ostatnie)
+                    # Wycinamy kolumny (wyrzucamy 4 ostatnie)
                     widok = df_w.iloc[:, :-4].copy()
                     
                     st.metric("Liczba rekordów", len(df_w))
@@ -100,20 +101,30 @@ else:
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    # MAGIA: Wyświetlamy jako HTML, żeby zachować poziomy nagłówków bez "Unnamed"
-                    # stylizujemy tabelę, żeby wyglądała jak w Excelu
-                    html_table = widok.to_html(classes='table table-striped', border=0)
+                    # Generowanie HTML
+                    html_table = widok.to_html(classes='tales-table', border=0)
                     
-                    # Usuwamy napisy "Unnamed: ...", które Pandas wstawia do HTMLa
-                    import re
+                    # Usuwamy techniczne napisy Unnamed
                     html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
                     
+                    # CSS do wyśrodkowania i przesunięcia Lp, Nazwisko itp na dół
                     st.markdown("""
                     <style>
-                        table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
-                        th { background-color: #f0f2f6; border: 1px solid #ddd; padding: 8px; text-align: center; }
-                        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-                        tr:nth-child(even) { background-color: #f9f9f9; }
+                        .tales-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
+                        /* Styl dla wszystkich komórek nagłówka */
+                        .tales-table th { 
+                            background-color: #f0f2f6; 
+                            border: 1px solid #ddd; 
+                            padding: 8px; 
+                            text-align: center;
+                            vertical-align: bottom; /* To spycha Lp, Nazwisko itp na dół */
+                        }
+                        /* Wyjątek dla Działów - wyśrodkowanie w pionie i poziomie */
+                        .tales-table tr:first-child th {
+                            vertical-align: middle;
+                        }
+                        .tales-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                        .tales-table tr:nth-child(even) { background-color: #f9f9f9; }
                     </style>
                     """, unsafe_allow_html=True)
                     
@@ -122,10 +133,12 @@ else:
                     st.error("Błąd pliku.")
 
     elif st.session_state.rola == "uczen":
-        # Widok ucznia zostawiamy prosty
         w = st.session_state.dane
         st.header(f"Witaj, {w.iloc[0, 1]}!")
-        punkty = float(w.iloc[0, 15])
-        ocena = str(w.iloc[0, 16])
-        st.metric("Twoje punkty", f"{punkty} / 60")
-        st.metric("Ocena", ocena)
+        try:
+            punkty = float(w.iloc[0, 15])
+            ocena = str(w.iloc[0, 16])
+            st.metric("Twoje punkty", f"{punkty} / 60")
+            st.metric("Ocena", ocena)
+        except:
+            st.error("Błąd odczytu danych.")
