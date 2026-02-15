@@ -102,8 +102,53 @@ else:
                     if szukaj:
                         widok = widok[widok.iloc[:, 1].astype(str).str.contains(szukaj, case=False)]
                     
-                    # 2. Generowanie HTML - KLUCZ: index=False usuwa tę pierwszą kolumnę z numerami
-                    html_table = widok.to_html(classes='tales-table', border=0, na_rep="", index=False)
+                    # 2. CAŁKOWITE USUNIĘCIE INDEKSU (tej pierwszej kolumny 0,1,2...)
+                    # Resetujemy indeks i go wyrzucamy przed generowaniem HTML
+                    html_table = widok.to_html(index=False, classes='tales-table', border=0)
                     
                     # 3. Usuwamy techniczne napisy Unnamed
-                    html_table =
+                    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
+                    
+                    # 4. Stylizacja CSS (poprawka kolorów i wyrównania)
+                    st.markdown("""
+                    <style>
+                        .tales-table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            font-family: sans-serif; 
+                            font-size: 13px; 
+                        }
+                        /* Wszystkie nagłówki (th) mają mieć szare tło */
+                        .tales-table thead th { 
+                            background-color: #f0f2f6 !important; 
+                            color: #31333f;
+                            border: 1px solid #ddd !important; 
+                            padding: 10px 5px; 
+                            text-align: center;
+                            vertical-align: middle;
+                        }
+                        .tales-table td { 
+                            border: 1px solid #ddd; 
+                            padding: 8px; 
+                            text-align: center; 
+                        }
+                        .tales-table tr:nth-child(even) { background-color: #f9f9f9; }
+                        /* Ukrycie pustych nazw poziomów, jeśli regex coś zostawił */
+                        .tales-table th:empty { background-color: #f0f2f6 !important; }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    st.write(html_table, unsafe_allow_html=True)
+                else:
+                    st.error("Błąd pliku.")
+
+    elif st.session_state.rola == "uczen":
+        w = st.session_state.dane
+        st.header(f"Witaj, {w.iloc[0, 1]}!")
+        try:
+            punkty = float(w.iloc[0, 15])
+            ocena = str(w.iloc[0, 16])
+            st.metric("Twoje punkty", f"{punkty} / 60")
+            st.metric("Ocena", ocena)
+        except:
+            st.error("Błąd odczytu danych.")
