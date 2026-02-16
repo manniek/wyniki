@@ -40,7 +40,7 @@ def show_panel(wiersz_ucznia):
     do_zrobienia = []
 
     # Analiza par od indeksu 4 (Log+zb) do 15
-    for i in range(4, 16, 2):
+    for i in range(5, 17, 2):
         try:
             raw_name = str(kol_info[i][1])
             if "Unnamed" in raw_name: continue
@@ -60,7 +60,7 @@ def show_panel(wiersz_ucznia):
     # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
     # Pobieramy sumę bezpośrednio z indeksu 16 (tak jak podałeś)
     try:
-        suma_total = float(dane[18])
+        suma_total = float(dane[19])
     except:
         suma_total = 0.0
 
@@ -81,5 +81,6 @@ def show_panel(wiersz_ucznia):
         if suma_total < 40.5:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
+
 
 
