@@ -96,4 +96,5 @@ def show_panel(wiersz_ucznia):
                 brakujace = 40.5 - suma_total
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
-                st.success("✨ Masz punkty na zaliczenie! Czekaj na wpisanie oceny.")
+                st.success("")
+
