@@ -1,14 +1,19 @@
 import streamlit as st
 import re
 import pandas as pd
-# --- TYMCZASOWY PODGLĄD INDEKSÓW (DO USUNIĘCIA POTEM) ---
-st.write("---")
-st.write("🔍 **Podgląd techniczny kolumn (sprawdź indeks 16):**")
-for i, val in enumerate(dane):
-    st.write(f"Indeks {i}: `{val}`")
-    # -------------------------------------------------------
+
 def show_panel(wiersz_ucznia):
-    # 1. GÓRNY PASEK (Przywrócony układ z przyciskiem po prawej)
+    # 1. NAJPIERW DEFINIUJEMY 'dane'
+    wiersz_clean = wiersz_ucznia.fillna(0)
+    dane = wiersz_clean.iloc[0].values  # <--- To tworzy zmienną 'dane'
+    
+    # 2. TERAZ MOŻEMY JE WYPISAĆ (DIAGNOSTYKA)
+    st.write("### 🛠 Diagnostyka")
+    for i, val in enumerate(dane):
+        st.write(f"Indeks {i}: `{val}`")
+    st.write("---")
+
+    # 3. RESZTA KODU (Pasek powitalny itd.)
     c_pow, c_spacer, c_btn = st.columns([6, 2, 2])
     with c_pow:
         st.subheader(f"👋 Witaj, {wiersz_ucznia.iloc[0, 1]}")
@@ -78,4 +83,5 @@ def show_panel(wiersz_ucznia):
         # Jeśli suma przekracza próg, pokazujemy złoty puchar
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
+
 
