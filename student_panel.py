@@ -10,7 +10,7 @@ def show_panel(wiersz_ucznia):
         # Pobieramy pełny tekst, dzielimy go na wyrazy i bierzemy drugi element (imię)
         pelne_dane = str(wiersz_ucznia.iloc[0, 1])
         imie = pelne_dane.split()[1] if len(pelne_dane.split()) > 1 else pelne_dane
-        st.subheader(f"👋 {imie}")
+        st.subheader(f"👋 {imie}!")
 
     with c_progi:
         p1, p2, p3, p4, p5, p6 = st.columns(6)
@@ -112,6 +112,7 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
 
 
