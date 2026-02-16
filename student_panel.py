@@ -45,19 +45,21 @@ def show_panel(wiersz_ucznia):
     do_zrobienia = []
     kolumny = wiersz_ucznia.columns
     
-    # i to indeksy kolumn: 3, 5, 7, 9, 11, 13 (pary zadań)
     for i in range(3, 15, 2):
         try:
-            # Pobieramy nazwę z nagłówka (poziom 1)
-            raw_name = kolumny[i][1]
+            raw_name = str(kolumny[i][1]) # Pobieramy np. "funkcje 15(5)"
             
-            # Jeśli pandas wstawił Unnamed, ignorujemy
-            if "Unnamed" in str(raw_name): continue
+            if "Unnamed" in raw_name: continue
+            
+            # CZYSZCZENIE NAZWY: 
+            # bierzemy tylko to, co jest przed pierwszą spacją
+            # "funkcje 15(5)" zamieni się w "funkcje"
+            clean_name = raw_name.split(" ")[0]
             
             # Małpowanie (mapowanie) na pełną nazwę
-            nazwa_pelna = mapa_nazw.get(raw_name, raw_name)
+            # Jeśli "clean_name" jest w słowniku, bierzemy opis, jeśli nie - zostawiamy oryginał
+            nazwa_pelna = mapa_nazw.get(clean_name, raw_name)
 
-            # Sumowanie pary
             val1 = wiersz_ucznia.iloc[0, i]
             val2 = wiersz_ucznia.iloc[0, i+1]
             
@@ -71,7 +73,6 @@ def show_panel(wiersz_ucznia):
                 do_zrobienia.append(nazwa_pelna)
         except:
             continue
-
     # Suma całkowita (indeks 15)
     suma_total = float(wiersz_ucznia.iloc[0, 15])
 
@@ -88,3 +89,4 @@ def show_panel(wiersz_ucznia):
         if suma_total <= 40:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Punkty do zdobycia:** {brakujace:.1f}")
+
