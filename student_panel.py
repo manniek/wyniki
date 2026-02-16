@@ -73,24 +73,9 @@ def show_panel(wiersz_ucznia):
         # Jeśli suma przekracza próg, pokazujemy złoty puchar
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
-
-    with col_prawa:
-        st.warning("**🚀 Do zrobienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
-        
-        # Jeśli brakuje punktów, pokazujemy ile dokładnie
-        if suma_total < 40.5:
-            brakujace = 40.5 - suma_total
-            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
-            with col_prawa:
-        st.warning("**🚀 Do zrobienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
-        
-        # Logika wyświetlania punktów
-        if suma_total < 40.5:
-            brakujace = 40.5 - suma_total
-            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
-        else:
-            st.success(f"🎊 Masz {suma_total:.1f} pkt – próg 40.5 przekroczony!")
-
-
-
-
+            # --- TYMCZASOWY PODGLĄD INDEKSÓW (DO USUNIĘCIA POTEM) ---
+    st.write("---")
+    st.write("🔍 **Podgląd techniczny kolumn (sprawdź indeks 16):**")
+    for i, val in enumerate(dane):
+        st.write(f"Indeks {i}: `{val}`")
+    # -------------------------------------------------------
