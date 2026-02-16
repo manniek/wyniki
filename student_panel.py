@@ -50,7 +50,7 @@ def show_panel(wiersz_ucznia):
     do_zrobienia = []
 
     # Analiza par od indeksu 4 (Log+zb) do 15
-    for i in range(5, 17, 2):
+    for i in range(3, 13, 2):
         try:
             raw_name = str(kol_info[i][1])
             if "Unnamed" in raw_name: continue
@@ -70,7 +70,7 @@ def show_panel(wiersz_ucznia):
     # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
     # Pobieramy sumę bezpośrednio z indeksu 16 (tak jak podałeś)
     try:
-        suma_total = float(dane[19])
+        suma_total = float(dane[15])
     except:
         suma_total = 0.0
 
@@ -83,5 +83,6 @@ def show_panel(wiersz_ucznia):
         # Jeśli suma przekracza próg, pokazujemy złoty puchar
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
+
 
 
