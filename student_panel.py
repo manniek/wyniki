@@ -22,9 +22,7 @@ def show_panel(wiersz_ucznia):
     st.markdown(html_table, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.write("") 
-
-    # 3. SŁOWNIK MAPOWANIA (TŁUMACZ SKRÓTÓW)
+    # 3. SŁOWNIK MAPOWANIA
     mapa_nazw = {
         "Log+zb": "logika i zbiory",
         "ciągi": "ciągi",
@@ -40,43 +38,56 @@ def show_panel(wiersz_ucznia):
         "równ. róż.": "równania różniczkowe"
     }
 
-    # 4. ANALIZA DZIAŁÓW (PARY KOLUMN)
+    # 4. ANALIZA DZIAŁÓW - LOGIKA PĘTLI
     zdane = []
     do_zrobienia = []
-    kolumny = wiersz_ucznia.columns
     
+    # Wyciągamy dane wiersza jako prostą listę, żeby uniknąć problemów z MultiIndexem
+    dane_wiersza = wiersz_ucznia.iloc[0].values
+    kolumny = wiersz_ucznia.columns
+
+    # i to indeksy 3, 5, 7, 9, 11, 13
     for i in range(3, 15, 2):
         try:
-            raw_name = str(kolumny[i][1]) # Pobieramy np. "funkcje 15(5)"
-            
-            if "Unnamed" in raw_name: continue
-            
-            # CZYSZCZENIE NAZWY: 
-            # bierzemy tylko to, co jest przed pierwszą spacją
-            # "funkcje 15(5)" zamieni się w "funkcje"
-            clean_name = raw_name.split(" ")[0]
-            
-            # Małpowanie (mapowanie) na pełną nazwę
-            # Jeśli "clean_name" jest w słowniku, bierzemy opis, jeśli nie - zostawiamy oryginał
-            nazwa_pelna = mapa_nazw.get(clean_name, raw_name)
+            # Pobieramy nazwę z nagłówka (poziom 1)
+            raw_name = str(kolumny[i][1])
+            if "Unnamed" in raw_name:
+                continue
 
-            val1 = wiersz_ucznia.iloc[0, i]
-            val2 = wiersz_ucznia.iloc[0, i+1]
-            
-            f1 = float(val1) if (val1 != "" and val1 is not None) else 0.0
-            f2 = float(val2) if (val2 != "" and val2 is not None) else 0.0
-            suma_pary = f1 + f2
-            
+            # Małpowanie: tniemy po spacji i szukamy w słowniku
+            clean_key = raw_name.split(" ")[0]
+            nazwa_finalna = mapa_nazw.get(clean_key, raw_name)
+
+            # Pobieramy wartości punktowe
+            val1 = dane_wiersza[i]
+            val2 = dane_wiersza[i+1]
+
+            # Konwersja na float - bezpieczna
+            def to_f(x):
+                try:
+                    return float(x) if (x != "" and x is not None) else 0.0
+                except:
+                    return 0.0
+
+            suma_pary = to_f(val1) + to_f(val2)
+
+            # WARUNEK ZDANIA
             if suma_pary >= 4.5:
-                zdane.append(nazwa_pelna)
+                zdane.append(nazwa_finalna)
             else:
-                do_zrobienia.append(nazwa_pelna)
-        except:
+                do_zrobienia.append(nazwa_finalna)
+                
+        except Exception as e:
             continue
-    # Suma całkowita (indeks 15)
-    suma_total = float(wiersz_ucznia.iloc[0, 15])
 
-    # 5. WYŚWIETLANIE DWÓCH POŁÓW
+    # Pobieramy sumę całkowitą z kolumny 15
+    try:
+        suma_total = float(dane_wiersza[15])
+    except:
+        suma_total = 0.0
+
+    # 5. WYŚWIETLANIE W DWÓCH POŁOWACH
+    st.write("") 
     col_lewa, col_prawa = st.columns(2)
 
     with col_lewa:
@@ -89,4 +100,3 @@ def show_panel(wiersz_ucznia):
         if suma_total <= 40:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Punkty do zdobycia:** {brakujace:.1f}")
-
