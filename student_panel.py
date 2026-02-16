@@ -3,33 +3,28 @@ import re
 import pandas as pd
 
 def show_panel(wiersz_ucznia):
-    # Tworzymy 3 główne sekcje: Powitanie (lewa), Progi (środek), Przycisk (prawa)
-    # Proporcje [2, 6, 2] oznaczają, że środkowa część na progi jest najszersza
-    c_pow, c_progi, c_btn = st.columns([2, 6, 2])
+    # USUŃ STĄD WSZELKIE st.write("📊 Progi...") JEŚLI JE WIDZISZ
+    
+    # Nagłówek w jednej linii
+    c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
 
     with c_pow:
+        # Skrócone powitanie, żeby nie zajmowało pół ekranu
         st.subheader(f"👋 {wiersz_ucznia.iloc[0, 1]}")
 
     with c_progi:
-        # Wewnątrz środkowej kolumny robimy 6 mniejszych na progi
+        # Kontener na kolory bez żadnego tekstu powyżej
         p1, p2, p3, p4, p5, p6 = st.columns(6)
         
-        # Stylizacja CSS dla małych boksów (zmniejszona czcionka i padding, żeby się zmieściło)
-        style = 'style="color:white; padding:2px; text-align:center; border-radius:3px; font-size:12px; line-height:1.2;"'
-        style_dark = 'style="color:black; padding:2px; text-align:center; border-radius:3px; font-size:12px; line-height:1.2;"'
+        s = 'style="color:white; padding:2px; text-align:center; border-radius:3px; font-size:11px; font-weight:bold;"'
+        sd = 'style="color:black; padding:2px; text-align:center; border-radius:3px; font-size:11px; font-weight:bold;"'
         
-        with p1:
-            st.markdown(f'<div {style} style="background-color:#FF0000;"><b>2</b><br>0-40</div>', unsafe_allow_html=True)
-        with p2:
-            st.markdown(f'<div {style_dark} style="background-color:#92D050;"><b>3</b><br>40-52</div>', unsafe_allow_html=True)
-        with p3:
-            st.markdown(f'<div {style} style="background-color:#00B050;"><b>3.5</b><br>52-64</div>', unsafe_allow_html=True)
-        with p4:
-            st.markdown(f'<div {style} style="background-color:#00B0F0;"><b>4</b><br>64-76</div>', unsafe_allow_html=True)
-        with p5:
-            st.markdown(f'<div {style} style="background-color:#0070C0;"><b>4.5</b><br>76-88</div>', unsafe_allow_html=True)
-        with p6:
-            st.markdown(f'<div {style_dark} style="background-color:#FFC000;"><b>5</b><br>88-100</div>', unsafe_allow_html=True)
+        p1.markdown(f'<div {s} style="background-color:#FF0000;">2<br>0-40</div>', unsafe_allow_html=True)
+        p2.markdown(f'<div {sd} style="background-color:#92D050;">3<br>40-52</div>', unsafe_allow_html=True)
+        p3.markdown(f'<div {s} style="background-color:#00B050;">3.5<br>52-64</div>', unsafe_allow_html=True)
+        p4.markdown(f'<div {s} style="background-color:#00B0F0;">4<br>64-76</div>', unsafe_allow_html=True)
+        p5.markdown(f'<div {s} style="background-color:#0070C0;">4.5<br>76-88</div>', unsafe_allow_html=True)
+        p6.markdown(f'<div {sd} style="background-color:#FFC000;">5<br>88-100</div>', unsafe_allow_html=True)
 
     with c_btn:
         if st.button("Wyloguj", use_container_width=True):
@@ -116,6 +111,7 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
 
 
