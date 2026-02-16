@@ -7,11 +7,6 @@ def show_panel(wiersz_ucznia):
     wiersz_clean = wiersz_ucznia.fillna(0)
     dane = wiersz_clean.iloc[0].values  # <--- To tworzy zmienną 'dane'
     
-    # 2. TERAZ MOŻEMY JE WYPISAĆ (DIAGNOSTYKA)
-    st.write("### 🛠 Diagnostyka")
-    for i, val in enumerate(dane):
-        st.write(f"Indeks {i}: `{val}`")
-    st.write("---")
 
     # 3. RESZTA KODU (Pasek powitalny itd.)
     c_pow, c_spacer, c_btn = st.columns([6, 2, 2])
@@ -83,6 +78,7 @@ def show_panel(wiersz_ucznia):
         # Jeśli suma przekracza próg, pokazujemy złoty puchar
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
+
 
 
 
