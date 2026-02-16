@@ -17,12 +17,12 @@ def show_panel(wiersz_ucznia):
         s_w = 'display:block; color:white; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
         s_b = 'display:block; color:black; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
         
-        p1.markdown(f'<div style="{s_w} background-color:#FF0000;">2<br>0-40</div>', unsafe_allow_html=True)
-        p2.markdown(f'<div style="{s_b} background-color:#92D050;">3<br>40-52</div>', unsafe_allow_html=True)
-        p3.markdown(f'<div style="{s_w} background-color:#00B050;">3.5<br>52-64</div>', unsafe_allow_html=True)
-        p4.markdown(f'<div style="{s_w} background-color:#00B0F0;">4<br>64-76</div>', unsafe_allow_html=True)
-        p5.markdown(f'<div style="{s_w} background-color:#0070C0;">4.5<br>76-88</div>', unsafe_allow_html=True)
-        p6.markdown(f'<div style="{s_b} background-color:#FFC000;">5<br>88-100</div>', unsafe_allow_html=True)
+        p1.markdown(f'<div style="{s_w} background-color:#FF0000;">ocena 2:<br>(0-40]</div>', unsafe_allow_html=True)
+        p2.markdown(f'<div style="{s_b} background-color:#92D050;">ocena 3:<br>(40-52]</div>', unsafe_allow_html=True)
+        p3.markdown(f'<div style="{s_w} background-color:#00B050;">ocena 3.5:<br>(52-64]</div>', unsafe_allow_html=True)
+        p4.markdown(f'<div style="{s_w} background-color:#00B0F0;">ocena 4:<br>(64-76]</div>', unsafe_allow_html=True)
+        p5.markdown(f'<div style="{s_w} background-color:#0070C0;">ocena 4.5:<br>(76-88]</div>', unsafe_allow_html=True)
+        p6.markdown(f'<div style="{s_b} background-color:#FFC000;">ocena 5:<br(88-100]</div>', unsafe_allow_html=True)
 
     with c_btn:
         if st.button("Wyloguj", use_container_width=True):
@@ -109,6 +109,7 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
 
 
