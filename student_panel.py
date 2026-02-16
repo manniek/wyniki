@@ -2,7 +2,7 @@ import streamlit as st
 import re
 
 def show_panel(wiersz_ucznia):
-    # 1. GÓRNY PASEK
+    # GÓRNY PASEK
     c_pow, c_spacer, c_btn = st.columns([6, 2, 2])
     with c_pow:
         st.subheader(f"👋 Witaj, {wiersz_ucznia.iloc[0, 1]}")
@@ -14,10 +14,8 @@ def show_panel(wiersz_ucznia):
 
     st.write("---")
 
-    # 2. TABELA WYNIKÓW
-    st.markdown("#### Twoje wyniki szczegółowe:")
+    # TABELA WYNIKÓW
     st.markdown('<div class="table-container">', unsafe_allow_html=True)
-    
     widok_ucznia = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
     html_table = widok_ucznia.to_html(index=False, classes='tales-table', border=0)
     html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
@@ -26,25 +24,26 @@ def show_panel(wiersz_ucznia):
 
     st.write("") 
 
-    # 3. TWOJA LOGIKA: Pętla po parach kolumn
-    # Zakładamy nazwy działów w kolejności par:
+    # TWOJA LOGIKA: Pary kolumn od 4 do 15 (indeksy 3 do 14)
     nazwy_dzialow = ["Log+zb", "Ciągi", "F. wykładnicza", "Trygonometria", "Geometria", "Inne"]
-    
     zdane = []
     do_zrobienia = []
     
-    # Idziemy pętlą co 2 kolumny (od 3 do 15 w Pythonie, co odpowiada Twoim 4-15)
-    # W Pythonie iloc[0, 3] to 4. kolumna w Excelu
     dzial_idx = 0
+    # i to indeksy kolumn: 3, 5, 7, 9, 11, 13
     for i in range(3, 15, 2):
         if dzial_idx < len(nazwy_dzialow):
             try:
                 val1 = wiersz_ucznia.iloc[0, i]
                 val2 = wiersz_ucznia.iloc[0, i+1]
                 
-                suma_pary = (float(val1) if val1 != "" else 0) + (float(val2) if val2 != "" else 0)
+                # Konwersja na float, jeśli puste to 0
+                f1 = float(val1) if (val1 != "" and val1 is not None) else 0.0
+                f2 = float(val2) if (val2 != "" and val2 is not None) else 0.0
                 
+                suma_pary = f1 + f2
                 nazwa = nazwy_dzialow[dzial_idx]
+                
                 if suma_pary >= 4.5:
                     zdane.append(nazwa)
                 else:
@@ -53,10 +52,10 @@ def show_panel(wiersz_ucznia):
                 pass
             dzial_idx += 1
 
-    # Pobieramy sumę całkowitą z kolumny 15 (indeks 15)
+    # Suma całkowita z kolumny o indeksie 15
     suma_total = float(wiersz_ucznia.iloc[0, 15])
 
-    # 4. WYŚWIETLANIE DWÓCH POŁÓW
+    # PODSUMOWANIE W DWÓCH KOLUMNACH
     col_lewa, col_prawa = st.columns(2)
 
     with col_lewa:
