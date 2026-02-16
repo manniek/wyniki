@@ -22,7 +22,7 @@ def show_panel(wiersz_ucznia):
         p3.markdown(f'<div style="{s_w} background-color:#00B050;">ocena 3.5:<br>(52-64]</div>', unsafe_allow_html=True)
         p4.markdown(f'<div style="{s_w} background-color:#00B0F0;">ocena 4:<br>(64-76]</div>', unsafe_allow_html=True)
         p5.markdown(f'<div style="{s_w} background-color:#0070C0;">ocena 4.5:<br>(76-88]</div>', unsafe_allow_html=True)
-        p6.markdown(f'<div style="{s_b} background-color:#FFC000;">ocena 5:<br(88-100]</div>', unsafe_allow_html=True)
+        p6.markdown(f'<div style="{s_b} background-color:#FFC000;">ocena 5:<br>(88-100]</div>', unsafe_allow_html=True)
 
     with c_btn:
         if st.button("Wyloguj", use_container_width=True):
@@ -109,6 +109,7 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
 
 
