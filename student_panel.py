@@ -81,6 +81,16 @@ def show_panel(wiersz_ucznia):
         if suma_total < 40.5:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
+            with col_prawa:
+        st.warning("**🚀 Do zrobienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
+        
+        # Logika wyświetlania punktów
+        if suma_total < 40.5:
+            brakujace = 40.5 - suma_total
+            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
+        else:
+            st.success(f"🎊 Masz {suma_total:.1f} pkt – próg 40.5 przekroczony!")
+
 
 
 
