@@ -45,7 +45,7 @@ def show_panel(wiersz_ucznia):
     do_zrobienia = []
 
     # Analiza par od indeksu 4 (Log+zb) do 15
-    for i in range(3, 13, 2):
+    for i in range(3, 14, 2):
         try:
             raw_name = str(kol_info[i][1])
             if "Unnamed" in raw_name: continue
@@ -97,4 +97,5 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
