@@ -2,10 +2,10 @@ import streamlit as st
 import re
 import pandas as pd
 # --- TYMCZASOWY PODGLĄD INDEKSÓW (DO USUNIĘCIA POTEM) ---
-    st.write("---")
-    st.write("🔍 **Podgląd techniczny kolumn (sprawdź indeks 16):**")
-    for i, val in enumerate(dane):
-        st.write(f"Indeks {i}: `{val}`")
+st.write("---")
+st.write("🔍 **Podgląd techniczny kolumn (sprawdź indeks 16):**")
+for i, val in enumerate(dane):
+    st.write(f"Indeks {i}: `{val}`")
     # -------------------------------------------------------
 def show_panel(wiersz_ucznia):
     # 1. GÓRNY PASEK (Przywrócony układ z przyciskiem po prawej)
@@ -78,3 +78,4 @@ def show_panel(wiersz_ucznia):
         # Jeśli suma przekracza próg, pokazujemy złoty puchar
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
+
