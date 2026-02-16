@@ -73,27 +73,26 @@ def show_panel(wiersz_ucznia):
     st.write("") 
     col_lewa, col_prawa = st.columns(2)
 
+    # Pobieramy ocenę (indeks 16) i czyścimy ją
+    ocena = str(dane[16]).strip() if dane[16] not in [0, "0", None, "nan"] else ""
+
     with col_lewa:
         st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
         
-        # Pobieramy ocenę z kolumny 16 (jako string)
-        try:
-            ocena = str(dane[16])
-            # Wyświetlamy ocenę tylko jeśli suma punktów wskazuje na zaliczenie
-            if suma_total >= 40.5:
-                st.success(f"🎓 **Twoja ocena to: {ocena}**")
-        except:
-            pass
+        # Jeśli ocena nie jest pusta, wypisujemy ją
+        if ocena and ocena != "":
+            st.success(f"🎓 **Twoja ocena to: {ocena}**")
+        else:
+            # W przeciwnym przypadku informujemy o braku zaliczenia
+            st.warning("⚠️ **Brak oceny** (kurs jeszcze niezaliczony)")
 
     with col_prawa:
         st.warning("**🚀 Do robienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
         
-        # Sekcja "Do zdobycia" - przywrócona
-        if suma_total < 40.5:
-            brakujace = 40.5 - suma_total
-            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do 40.5 pkt")
-
-
-
-
-
+        # Jeśli oceny brak, pokazujemy ile punktów brakuje do progu 40.5
+        if not ocena or ocena == "":
+            if suma_total < 40.5:
+                brakujace = 40.5 - suma_total
+                st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
+            else:
+                st.info("📊 Masz punkty na zaliczenie, czekaj na wystawienie oceny.")
