@@ -60,7 +60,7 @@ def show_panel(wiersz_ucznia):
     # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
     # Pobieramy sumę bezpośrednio z indeksu 16 (tak jak podałeś)
     try:
-        suma_total = float(dane[16])
+        suma_total = float(dane[17])
     except:
         suma_total = 0.0
 
@@ -81,3 +81,4 @@ def show_panel(wiersz_ucznia):
         if suma_total < 40.5:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
+
