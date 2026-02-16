@@ -3,37 +3,40 @@ import re
 import pandas as pd
 
 def show_panel(wiersz_ucznia):
-    # 1. POWITANIE I PRZYCISK WYLOGUJ
-    c_pow, c_btn = st.columns([8, 2])
+    # Tworzymy 3 główne sekcje: Powitanie (lewa), Progi (środek), Przycisk (prawa)
+    # Proporcje [2, 6, 2] oznaczają, że środkowa część na progi jest najszersza
+    c_pow, c_progi, c_btn = st.columns([2, 6, 2])
+
     with c_pow:
-        st.subheader(f"👋 Witaj, {wiersz_ucznia.iloc[0, 1]}")
+        st.subheader(f"👋 {wiersz_ucznia.iloc[0, 1]}")
+
+    with c_progi:
+        # Wewnątrz środkowej kolumny robimy 6 mniejszych na progi
+        p1, p2, p3, p4, p5, p6 = st.columns(6)
+        
+        # Stylizacja CSS dla małych boksów (zmniejszona czcionka i padding, żeby się zmieściło)
+        style = 'style="color:white; padding:2px; text-align:center; border-radius:3px; font-size:12px; line-height:1.2;"'
+        style_dark = 'style="color:black; padding:2px; text-align:center; border-radius:3px; font-size:12px; line-height:1.2;"'
+        
+        with p1:
+            st.markdown(f'<div {style} style="background-color:#FF0000;"><b>2</b><br>0-40</div>', unsafe_allow_html=True)
+        with p2:
+            st.markdown(f'<div {style_dark} style="background-color:#92D050;"><b>3</b><br>40-52</div>', unsafe_allow_html=True)
+        with p3:
+            st.markdown(f'<div {style} style="background-color:#00B050;"><b>3.5</b><br>52-64</div>', unsafe_allow_html=True)
+        with p4:
+            st.markdown(f'<div {style} style="background-color:#00B0F0;"><b>4</b><br>64-76</div>', unsafe_allow_html=True)
+        with p5:
+            st.markdown(f'<div {style} style="background-color:#0070C0;"><b>4.5</b><br>76-88</div>', unsafe_allow_html=True)
+        with p6:
+            st.markdown(f'<div {style_dark} style="background-color:#FFC000;"><b>5</b><br>88-100</div>', unsafe_allow_html=True)
+
     with c_btn:
         if st.button("Wyloguj", use_container_width=True):
             st.session_state.clear()
             st.rerun()
 
-    # 2. POZIOMA TABELA Z PROGAMI OCEN
-    st.write("📊 **Progi punktowe na oceny:**")
-    
-    # Tworzymy 6 kolumn dla 6 przedziałów ocen
-    p1, p2, p3, p4, p5, p6 = st.columns(6)
-    
-    with p1:
-        st.markdown('<div style="background-color:#FF0000; color:white; padding:5px; text-align:center; border-radius:5px;"><b>2</b><br>[0-40]</div>', unsafe_allow_html=True)
-    with p2:
-        st.markdown('<div style="background-color:#92D050; color:black; padding:5px; text-align:center; border-radius:5px;"><b>3</b><br>(40-52]</div>', unsafe_allow_html=True)
-    with p3:
-        st.markdown('<div style="background-color:#00B050; color:white; padding:5px; text-align:center; border-radius:5px;"><b>3.5</b><br>(52-64]</div>', unsafe_allow_html=True)
-    with p4:
-        st.markdown('<div style="background-color:#00B0F0; color:white; padding:5px; text-align:center; border-radius:5px;"><b>4</b><br>(64-76]</div>', unsafe_allow_html=True)
-    with p5:
-        st.markdown('<div style="background-color:#0070C0; color:white; padding:5px; text-align:center; border-radius:5px;"><b>4.5</b><br>(76-88]</div>', unsafe_allow_html=True)
-    with p6:
-        st.markdown('<div style="background-color:#FFC000; color:black; padding:5px; text-align:center; border-radius:5px;"><b>5</b><br>(88-100]</div>', unsafe_allow_html=True)
-
     st.write("---")
-    
-    # ... dalsza część Twojego kodu (tabela wyników, logika sumowania itd.) ...
 
     # 2. TABELA WYNIKÓW (Wyświetlamy oryginał bez zmian)
     st.markdown('<div class="table-container">', unsafe_allow_html=True)
@@ -113,6 +116,7 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
 
 
