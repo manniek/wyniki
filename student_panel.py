@@ -29,31 +29,36 @@ def show_panel(wiersz_ucznia):
     zdane = []
     do_zrobienia = []
     
+    st.write("### Diagnostyka danych:")
+    
+    # 1. Sprawdzamy co dokładnie widzi Python
+    dane_wiersza = wiersz_ucznia.iloc[0]
+    
+    # 2. Wypisujemy każdą kolumnę z jej indeksem
+    for i in range(len(dane_wiersza)):
+        st.write(f"Indeks **{i}** | Wartość: `{dane_wiersza[i]}`")
+
+    # 3. Twoja pętla (uproszczona do testu)
+    zdane = []
+    do_zrobienia = []
+    nazwy_dzialow = ["Log+zb", "Ciągi", "F. wykładnicza", "Trygonometria", "Geometria", "Inne"]
+    
+    # Tymczasowo wypisujemy proces sumowania
+    st.write("### Proces sprawdzania działów:")
     dzial_idx = 0
     for i in range(3, 15, 2):
-        if dzial_idx < len(nazwy_dzialow):
-            try:
-                val1 = wiersz_ucznia.iloc[0, i]
-                val2 = wiersz_ucznia.iloc[0, i+1]
-                
-                f1 = float(val1) if (val1 != "" and val1 is not None) else 0.0
-                f2 = float(val2) if (val2 != "" and val2 is not None) else 0.0
-                
-                suma_pary = f1 + f2
-                nazwa = nazwy_dzialow[dzial_idx]
-                
-                # --- TO JEST TWOJA DIAGNOSTYKA ---
-                # Wyświetli: "Dział Log+zb: widzę wartości 2.0 i 3.0 (Suma: 5.0)"
-                # st.write(f"DEBUG: Dział {nazwa} (kolumny {i} i {i+1}): {f1} + {f2} = {suma_pary}") 
-                # ---------------------------------
-
-                if suma_pary >= 4.5:
-                    zdane.append(nazwa)
-                else:
-                    do_zrobienia.append(nazwa)
-            except Exception as e:
-                st.write(f"Błąd w parze {dzial_idx}: {e}")
-            dzial_idx += 1
+        val1 = dane_wiersza[i]
+        val2 = dane_wiersza[i+1]
+        suma = (float(val1) if val1 and str(val1).replace('.','').isdigit() else 0) + \
+               (float(val2) if val2 and str(val2).replace('.','').isdigit() else 0)
+        
+        st.write(f"Para {i}-{i+1} ({nazwy_dzialow[dzial_idx]}): {val1} + {val2} = {suma}")
+        
+        if suma >= 4.5:
+            zdane.append(nazwy_dzialow[dzial_idx])
+        else:
+            do_zrobienia.append(nazwy_dzialow[dzial_idx])
+        dzial_idx += 1
 
     # Suma całkowita z kolumny o indeksie 15
     suma_total = float(wiersz_ucznia.iloc[0, 15])
@@ -71,4 +76,5 @@ def show_panel(wiersz_ucznia):
         if suma_total <= 40:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Punkty do zdobycia:** {brakujace:.1f}")
+
 
