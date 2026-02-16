@@ -120,3 +120,4 @@ def show_panel(wiersz_ucznia):
 
 
 
+
