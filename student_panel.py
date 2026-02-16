@@ -73,26 +73,27 @@ def show_panel(wiersz_ucznia):
     st.write("") 
     col_lewa, col_prawa = st.columns(2)
 
-    # Pobieramy ocenę (indeks 16) i czyścimy ją
+    # Pobieramy ocenę (indeks 16) i sumę (indeks 15)
     ocena = str(dane[16]).strip() if dane[16] not in [0, "0", None, "nan"] else ""
+    suma_total = float(dane[15]) if dane[15] not in [None, "nan", ""] else 0.0
 
     with col_lewa:
         st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
         
-        # Jeśli ocena nie jest pusta, wypisujemy ją
+        # Logika oceny / punktów
         if ocena and ocena != "":
             st.success(f"🎓 **Twoja ocena to: {ocena}**")
         else:
-            # W przeciwnym przypadku informujemy o braku zaliczenia
-            st.warning("⚠️ **Brak oceny** (kurs jeszcze niezaliczony)")
+            # Zamiast komunikatu o braku oceny, pokazujemy sumę punktów
+            st.info(f"📊 **Zdobyłeś {suma_total:.1f} punktów**")
 
     with col_prawa:
         st.warning("**🚀 Do robienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
         
-        # Jeśli oceny brak, pokazujemy ile punktów brakuje do progu 40.5
-        if not ocena or ocena == "":
+        # Sekcja brakujących punktów (tylko jeśli brak oceny)
+        if not ocena:
             if suma_total < 40.5:
                 brakujace = 40.5 - suma_total
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
-                st.info("📊 Masz punkty na zaliczenie, czekaj na wystawienie oceny.")
+                st.success("✨ Masz punkty na zaliczenie! Czekaj na wpisanie oceny.")
