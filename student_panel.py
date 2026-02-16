@@ -75,11 +75,15 @@ def show_panel(wiersz_ucznia):
 
     with col_lewa:
         st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
-        # Jeśli suma przekracza próg
-        if suma_total >= 40.5:
-            st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
-        else:
-            st.info(f"📊 **Aktualne punkty:** {suma_total}")
+        
+        # Pobieramy ocenę z kolumny 16 (jako string)
+        try:
+            ocena = str(dane[16])
+            # Wyświetlamy ocenę tylko jeśli suma punktów wskazuje na zaliczenie
+            if suma_total >= 40.5:
+                st.success(f"🎓 **Twoja ocena to: {ocena}**")
+        except:
+            pass
 
     with col_prawa:
         st.warning("**🚀 Do robienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
@@ -88,6 +92,7 @@ def show_panel(wiersz_ucznia):
         if suma_total < 40.5:
             brakujace = 40.5 - suma_total
             st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do 40.5 pkt")
+
 
 
 
