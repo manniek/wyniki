@@ -59,4 +59,4 @@ def show_panel(wiersz_ucznia):
 
     if st.button("Wyloguj"):
         st.session_state.clear()
-        st.rerun()s
+        st.rerun()
