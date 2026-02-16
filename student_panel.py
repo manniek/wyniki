@@ -75,9 +75,19 @@ def show_panel(wiersz_ucznia):
 
     with col_lewa:
         st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
-        # Jeśli suma przekracza próg, pokazujemy złoty puchar
+        # Jeśli suma przekracza próg
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
+        else:
+            st.info(f"📊 **Aktualne punkty:** {suma_total}")
+
+    with col_prawa:
+        st.warning("**🚀 Do robienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
+        
+        # Sekcja "Do zdobycia" - przywrócona
+        if suma_total < 40.5:
+            brakujace = 40.5 - suma_total
+            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do 40.5 pkt")
 
 
 
