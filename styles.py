@@ -25,3 +25,4 @@ def apply_styles():
             .stButton>button { border-radius: 5px; }
         </style>
     """, unsafe_allow_html=True)
+    
