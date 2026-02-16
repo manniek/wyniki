@@ -58,22 +58,26 @@ def show_panel(wiersz_ucznia):
             continue
 
     # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
+    # Pobieramy sumę bezpośrednio z indeksu 16 (tak jak podałeś)
     try:
         suma_total = float(dane[16])
     except:
         suma_total = 0.0
 
-    # 4. POWRÓT DO MOTYWACYJNEGO PODSUMOWANIA (Dwie kolumny)
+    # 5. WYŚWIETLANIE W DWÓCH POŁOWACH
     st.write("") 
     col_lewa, col_prawa = st.columns(2)
 
     with col_lewa:
         st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
+        # Jeśli suma przekracza próg, pokazujemy złoty puchar
         if suma_total >= 40.5:
             st.success(f"🏆 **Zdobyte punkty:** {suma_total} (ZALICZONE!)")
 
     with col_prawa:
         st.warning("**🚀 Do zrobienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
+        
+        # Jeśli brakuje punktów, pokazujemy ile dokładnie
         if suma_total < 40.5:
             brakujace = 40.5 - suma_total
-            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do 40.5 pkt")
+            st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt (masz obecnie: {suma_total:.1f})")
