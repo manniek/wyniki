@@ -12,7 +12,7 @@ styles.apply_styles()
 
 # --- FUNKCJE ---
 def check_admin_password(input_password):
-    # Hasło admina: admin123
+    # Hasło admina: 123admin
     stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
     return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
@@ -75,4 +75,25 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        student_panel.show_panel(st.session_state.dane)
+        # student_panel.show_panel(st.session_state.dane)
+        if st.session_state.zalogowany:
+    if st.session_state.rola == "admin":
+        import admin_panel
+        admin_panel.show_panel()
+    else:
+        # TUTAJ BYŁO: student_panel.show_panel(st.session_state.dane)
+        # ZAMIAST TEGO DAJEMY ROZDZIELACZ:
+        
+        from streamlit_javascript import st_javascript
+        width = st_javascript("window.innerWidth")
+
+        if width is not None:
+            if width < 700:
+                import mobile_panel
+                mobile_panel.show_mobile_panel(st.session_state.dane)
+            else:
+                import student_panel
+                student_panel.show_panel(st.session_state.dane)
+        else:
+            st.info("Inicjalizacja widoku premium...")
+
