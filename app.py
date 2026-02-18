@@ -75,7 +75,6 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # To jest miejsce dla ucznia - tutaj wstawiamy rozdzielacz
         from streamlit_javascript import st_javascript
         width = st_javascript("window.innerWidth")
 
@@ -88,3 +87,4 @@ else:
                 student_panel.show_panel(st.session_state.dane)
         else:
             st.info("Inicjalizacja widoku premium...")
+
