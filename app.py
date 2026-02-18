@@ -53,18 +53,5 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # ROZDZIELACZ MOBILNY
-        from streamlit_javascript import st_javascript
-        width = st_javascript("window.innerWidth")
+        student_panel.show_panel(st.session_state.dane)
 
-        if width is not None:
-            if width < 700:
-                # Jeśli ekran jest mały, ładujemy panel mobilny
-                import mobile_panel
-                mobile_panel.show_mobile_panel(st.session_state.dane)
-            else:
-                # Jeśli ekran jest duży, standardowy panel
-                student_panel.show_panel(st.session_state.dane)
-        else:
-            # Placeholder, dopóki JS nie zmierzy ekranu
-            st.info("Inicjalizacja widoku...")
