@@ -75,16 +75,6 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        from streamlit_javascript import st_javascript
-        width = st_javascript("window.innerWidth")
-
-        if width is not None:
-            if width < 700:
-                import mobile_panel
-                mobile_panel.show_mobile_panel(st.session_state.dane)
-            else:
-                import student_panel
-                student_panel.show_panel(st.session_state.dane)
-        else:
-            st.info("Inicjalizacja widoku premium...")
+        import student_panel
+        student_panel.show_panel(st.session_state.dane)
 
