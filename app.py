@@ -17,12 +17,11 @@ def check_admin_password(input_password):
     return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
 def wczytaj_dane():
-    # Szukamy dowolnego pliku xlsx
     pliki = glob.glob("*.xlsx")
     if not pliki:
         return None, None
     
-    sciezka = pliki[0] # Bierzemy pierwszy lepszy plik excel
+    sciezka = pliki[0]
     try:
         df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
         df_h = pd.read_excel(sciezka, sheet_name='Arkusz2', header=None)
@@ -35,7 +34,7 @@ def wczytaj_dane():
 if "zalogowany" not in st.session_state:
     st.session_state.update({"zalogowany": False, "rola": None, "dane": None})
 
-# --- LOGOWANIE ---
+# --- LOGIKA ---
 if not st.session_state.zalogowany:
     st.title("🛡️ System TALES")
     with st.form("log_form"):
@@ -51,12 +50,10 @@ if not st.session_state.zalogowany:
             else:
                 df_w, df_h = wczytaj_dane()
                 if df_w is not None:
-                    # Nazwiska w kolumnie o indeksie 1
                     nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
                     if login_clean in nazwiska:
                         idx = nazwiska.index(login_clean)
                         lp = df_w.iloc[idx, 0]
-                        # Szukamy hasła w Arkusz2 po Lp
                         pass_row = df_h[df_h["Lp"] == lp]
                         if not pass_row.empty:
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
@@ -69,12 +66,11 @@ if not st.session_state.zalogowany:
                                 st.rerun()
                 st.error("Błędny login lub hasło.")
 
-# --- WYŚWIETLANIE ---
 else:
+    # Sekcja wyświetlania po zalogowaniu
     df_w, _ = wczytaj_dane()
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        import student_panel
+        # Na razie standardowy panel, żeby przywrócić działanie systemu
         student_panel.show_panel(st.session_state.dane)
-
