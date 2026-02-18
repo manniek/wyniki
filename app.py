@@ -76,10 +76,10 @@ else:
         admin_panel.show_panel(df_w)
     else:
         # student_panel.show_panel(st.session_state.dane)
-        if st.session_state.zalogowany:
-    if st.session_state.rola == "admin":
-        import admin_panel
-        admin_panel.show_panel()
+       # if st.session_state.zalogowany:
+    #if st.session_state.rola == "admin":
+        #import admin_panel
+        #admin_panel.show_panel()
     else:
         # TUTAJ BYŁO: student_panel.show_panel(st.session_state.dane)
         # ZAMIAST TEGO DAJEMY ROZDZIELACZ:
@@ -96,4 +96,5 @@ else:
                 student_panel.show_panel(st.session_state.dane)
         else:
             st.info("Inicjalizacja widoku premium...")
+
 
