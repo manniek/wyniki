@@ -69,24 +69,10 @@ if not st.session_state.zalogowany:
 else:
     # Sekcja wyświetlania po zalogowaniu
     df_w, _ = wczytaj_dane()
-    
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # --- BEZPIECZNY PRZEŁĄCZNIK WIDOKU ---
-        with st.sidebar:
-            st.title("⚙️ Ustawienia")
-            # Przełącznik, który uczeń może kliknąć na telefonie
-            widok_mobilny = st.toggle("📱 Wersja mobilna", value=False)
-            
-            st.divider()
-            if st.button("🔴 Wyloguj", use_container_width=True):
-                st.session_state.clear()
-                st.rerun()
+        # Po prostu ładujemy panel, a style CSS z styles.py 
+        # same "wyczują", że to telefon i naprawią kolory.
+        student_panel.show_panel(st.session_state.dane)
 
-        # Decyzja, który panel pokazać
-        if widok_mobilny:
-            import mobile_panel
-            mobile_panel.show_mobile_panel(st.session_state.dane)
-        else:
-            student_panel.show_panel(st.session_state.dane)
