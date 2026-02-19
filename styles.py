@@ -47,6 +47,20 @@ def apply_styles():
             color: #111111 !important;
         }
     }
+    /* Celujemy prosto w kontenery powiadomień (st.info, st.warning itp.) */
+    div[data-testid="stNotification"] {
+        background-color: #f0f2f6 !important; /* Jasnoszare tło dla ramki */
+        border: 1px solid #d1d5db !important;
+    }
+
+    /* Wymuszamy czarny kolor dla tekstu wewnątrz KAŻDEGO rodzaju powiadomienia */
+    div[data-testid="stNotification"] p, 
+    div[data-testid="stNotification"] div,
+    .stAlert p {
+        color: #000000 !important;
+        font-weight: 600 !important; /* Pogrubienie, żeby było lepiej widać */
+    }
     </style>
     """, unsafe_allow_html=True)
+
 
