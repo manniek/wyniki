@@ -30,5 +30,23 @@ def apply_styles():
             border: 1px solid #dddddd;
         }
     }
+    /* --- POPRAWKI MOBILNE --- */
+    @media (max-width: 768px) {
+        /* Biały tekst na przyciskach (Zaloguj/Wyloguj) */
+        button p, button span {
+            color: #ffffff !important;
+        }
+
+        /* Wymuszenie czarnego tekstu dla formułek i opisów */
+        .stMarkdown, p, span, label {
+            color: #111111 !important;
+        }
+
+        /* Specyficzna poprawka dla komunikatów typu st.info / st.warning */
+        div[data-testid="stNotificationContent"] p {
+            color: #111111 !important;
+        }
+    }
     </style>
     """, unsafe_allow_html=True)
+
