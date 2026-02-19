@@ -72,5 +72,21 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # Na razie standardowy panel, żeby przywrócić działanie systemu
-        student_panel.show_panel(st.session_state.dane)
+        # PRÓBA WYBORU WIDOKU
+        try:
+            from streamlit_javascript import st_javascript
+            width = st_javascript("window.innerWidth")
+            
+            # Jeśli width jest None (ładuje się), nic nie robimy lub dajemy info
+            if width is not None:
+                if width < 700:
+                    import mobile_panel
+                    mobile_panel.show_mobile_panel(st.session_state.dane)
+                else:
+                    student_panel.show_panel(st.session_state.dane)
+            else:
+                st.info("Dobieranie widoku do urządzenia...")
+        except:
+            # W razie jakiegokolwiek błędu z JS, ładujemy stary panel
+            student_panel.show_panel(st.session_state.dane)
+
