@@ -69,24 +69,27 @@ if not st.session_state.zalogowany:
 else:
     # Sekcja wyświetlania po zalogowaniu
     df_w, _ = wczytaj_dane()
+    
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # PRÓBA WYBORU WIDOKU
+        # NOWA PRÓBA AUTOMATYZACJI
         try:
-            from streamlit_javascript import st_javascript
-            width = st_javascript("window.innerWidth")
+            from streamlit_js_eval import streamlit_js_eval
+            # Pobieramy szerokość ekranu
+            width = streamlit_js_eval(js_expressions='window.innerWidth', key='WIDTH')
             
-            # Jeśli width jest None (ładuje się), nic nie robimy lub dajemy info
             if width is not None:
-                if width < 700:
+                if width < 768: # Standardowy próg dla tabletów/telefonów
                     import mobile_panel
                     mobile_panel.show_mobile_panel(st.session_state.dane)
                 else:
                     student_panel.show_panel(st.session_state.dane)
             else:
-                st.info("Dobieranie widoku do urządzenia...")
-        except:
-            # W razie jakiegokolwiek błędu z JS, ładujemy stary panel
+                # Jeśli JS jeszcze nie odpowiedział, pokazujemy cokolwiek, byle nie błąd
+                st.info("Dostosowywanie widoku...")
+        
+        except Exception as e:
+            # Jeśli biblioteka wywali błąd - ładujemy standard
             student_panel.show_panel(st.session_state.dane)
 
