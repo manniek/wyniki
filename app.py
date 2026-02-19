@@ -73,23 +73,22 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # NOWA PRÓBA AUTOMATYZACJI
-        try:
-            from streamlit_js_eval import streamlit_js_eval
-            # Pobieramy szerokość ekranu
-            width = streamlit_js_eval(js_expressions='window.innerWidth', key='WIDTH')
+        # --- BEZPIECZNY PRZEŁĄCZNIK WIDOKU ---
+        with st.sidebar:
+            st.title("⚙️ Ustawienia")
+            # Przełącznik, który uczeń może kliknąć na telefonie
+            widok_mobilny = st.toggle("📱 Wersja mobilna", value=False)
             
-            if width is not None:
-                if width < 768: # Standardowy próg dla tabletów/telefonów
-                    import mobile_panel
-                    mobile_panel.show_mobile_panel(st.session_state.dane)
-                else:
-                    student_panel.show_panel(st.session_state.dane)
-            else:
-                # Jeśli JS jeszcze nie odpowiedział, pokazujemy cokolwiek, byle nie błąd
-                st.info("Dostosowywanie widoku...")
-        
-        except Exception as e:
-            # Jeśli biblioteka wywali błąd - ładujemy standard
+            st.divider()
+            if st.button("🔴 Wyloguj", use_container_width=True):
+                st.session_state.clear()
+                st.rerun()
+
+        # Decyzja, który panel pokazać
+        if widok_mobilny:
+            import mobile_panel
+            mobile_panel.show_mobile_panel(st.session_state.dane)
+        else:
             student_panel.show_panel(st.session_state.dane)
+
 
