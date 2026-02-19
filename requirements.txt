@@ -2,4 +2,5 @@ pandas
 
 openpyxl
 
-streamlit-javascript==0.1.5
+# streamlit-javascript==0.1.5
+
