@@ -12,8 +12,20 @@ def show_mobile_panel(wiersz_ucznia):
     suma_total = float(dane[15])
     ocena = str(dane[16]).strip() if dane[16] not in [0, "0", None, "nan"] else ""
 
-    # 2. NAGŁÓWEK MOBILNY (Usunięto color:white - Streamlit sam dobierze kolor do tła)
-    st.markdown(f'<h2 style="text-align:center;">👋 Witaj, {imie}!</h2>', unsafe_allow_html=True)
+    # 2. NAGŁÓWEK MOBILNY - WYMUSZONY KONTRAST
+    st.markdown(f"""
+        <div style="
+            background-color: #1E1E1E; 
+            padding: 20px; 
+            border-radius: 15px; 
+            text-align: center; 
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        ">
+            <h2 style="color: #FFFFFF; margin: 0;">👋 Witaj, {imie}!</h2>
+            <p style="color: #AAAAAA; margin: 5px 0 0 0;">Twój panel wyników</p>
+        </div>
+    """, unsafe_allow_html=True)
     
     # 3. DRABINKA OCEN
     with st.expander("📊 Sprawdź progi punktowe"):
@@ -51,3 +63,4 @@ def show_mobile_panel(wiersz_ucznia):
     if st.button("🔴 WYLOGUJ", use_container_width=True):
         st.session_state.clear()
         st.rerun()
+
