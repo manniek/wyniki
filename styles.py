@@ -2,27 +2,33 @@ import streamlit as st
 
 def apply_styles():
     st.markdown("""
-        <style>
-            .stApp { background-color: #f0f7ff; }
-            .table-container {
-                background-color: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                margin-top: 20px;
-            }
-            .tales-table { 
-                width: 100%; border-collapse: collapse; 
-                font-family: sans-serif; font-size: 13px; 
-            }
-            .tales-table thead th { 
-                background-color: #e1e9f5 !important; 
-                color: #2c3e50; border: 1px solid #c8d6e5 !important; 
-                padding: 10px 5px; text-align: center; vertical-align: middle;
-            }
-            .tales-table td { border: 1px solid #eee; padding: 8px; text-align: center; }
-            .tales-table tr:nth-child(even) { background-color: #fcfdfe; }
-            .stButton>button { border-radius: 5px; }
-        </style>
+    <style>
+    /* 1. STYLE OGÓLNE (KOMPUTER) */
+    .stApp {
+        background-color: #f8f9fa;
+    }
+
+    /* 2. STYLO WANIE DLA TELEFONU (AUTOMATYCZNE) */
+    @media (max-width: 768px) {
+        /* Wymuszamy bardzo ciemny tekst, żeby był widoczny na jasnym tle */
+        .stApp, .stMarkdown, p, span, label, h1, h2, h3 {
+            color: #111111 !important;
+        }
+        
+        /* Naprawiamy tabele, żeby nie uciekały za ekran */
+        .stDataFrame, div[data-testid="stTable"] {
+            width: 100% !important;
+            overflow-x: auto;
+        }
+
+        /* Dodajemy tło pod sekcje, żeby odciąć je od reszty */
+        div[data-testid="stVerticalBlock"] > div {
+            background-color: #ffffff !important;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #dddddd;
+        }
+    }
+    </style>
     """, unsafe_allow_html=True)
-    
