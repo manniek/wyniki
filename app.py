@@ -90,5 +90,3 @@ else:
             mobile_panel.show_mobile_panel(st.session_state.dane)
         else:
             student_panel.show_panel(st.session_state.dane)
-
-
