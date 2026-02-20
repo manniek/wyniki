@@ -55,9 +55,18 @@ if not st.session_state.zalogowany:
                         idx = nazwiska.index(login_clean)
                         lp = df_w.iloc[idx, 0]
                         pass_row = df_h[df_h["Lp"] == lp]
+                        
                         if not pass_row.empty:
+                            # To jest hash, który masz w Excelu (z Twojej Mathematiki)
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
-                            if pass_clean == poprawne_haslo:
+                            
+                            # --- NOWA LOGIKA HASHOWANIA ---
+                            # Zamieniamy to, co wpisał uczeń, na hash SHA-256
+                            hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
+                            
+                            # Porównujemy hash wpisany z hashem z Excela
+                            if hash_wpisany == poprawne_haslo:
+                            # ------------------------------
                                 st.session_state.update({
                                     "zalogowany": True, 
                                     "rola": "uczen", 
@@ -75,4 +84,5 @@ else:
         # Po prostu ładujemy panel, a style CSS z styles.py 
         # same "wyczują", że to telefon i naprawią kolory.
         student_panel.show_panel(st.session_state.dane)
+
 
