@@ -50,7 +50,7 @@ if not st.session_state.zalogowany:
             else:
                 df_w, df_h = wczytaj_dane()
                 if df_w is not None:
-                    # Szukamy nazwiska w kolumnie 1
+                    # Szukamy nazwiska w kolumnie 1 (indeks 1)
                     nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
                     if login_clean in nazwiska:
                         idx = nazwiska.index(login_clean)
@@ -61,18 +61,22 @@ if not st.session_state.zalogowany:
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
                             hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
                             
-                            # CZYSTE LOGOWANIE: Jeśli hash pasuje, wpuszczamy
+                            # PORÓWNANIE HASZA
                             if hash_wpisany == poprawne_haslo:
                                 st.session_state.update({
                                     "zalogowany": True, 
                                     "rola": "uczen", 
-                                    "dane": df_w.iloc[[idx]] # Przekazujemy czysty wiersz z MultiIndexem
+                                    "dane": df_w.iloc[[idx]] 
                                 })
                                 st.rerun()
                             else:
                                 st.error("Błędne hasło.")
+                        else:
+                            st.error("Brak hasła dla tego użytkownika.")
                     else:
-                        st.error("Błędny login lub hasło.")
+                        st.error("Nie znaleziono użytkownika.")
+                else:
+                    st.error("Błąd bazy danych (plik Excel).")
 
 else:
     # Sekcja wyświetlania po zalogowaniu
@@ -80,5 +84,5 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # Tu student_panel zajmie się tłumaczeniem (u siebie, gdzie ma mapę)
+        # PRZEKAZANIE DO STUDENT_PANEL - tam dzieje się cała magia z mapą_nazw
         student_panel.show_panel(st.session_state.dane)
