@@ -7,12 +7,11 @@ import styles
 import admin_panel
 import student_panel
 
-st.set_page_config(page_title="System TALES", layout="wide")
+st.set_page_config(page_title="RB oceny", layout="wide")
 styles.apply_styles()
 
 # --- FUNKCJE ---
 def check_admin_password(input_password):
-    # Hasło admina: 123admin
     stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
     return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
@@ -36,7 +35,7 @@ if "zalogowany" not in st.session_state:
 
 # --- LOGIKA ---
 if not st.session_state.zalogowany:
-    st.title("🛡️ System TALES")
+    st.title("🛡️ RB oceny")
     with st.form("log_form"):
         uzytkownik = st.text_input("Nazwisko / Identyfikator:")
         haslo_wpisane = st.text_input("Hasło:", type="password")
@@ -57,11 +56,7 @@ if not st.session_state.zalogowany:
                         pass_row = df_h[df_h["Lp"] == lp]
                         
                         if not pass_row.empty:
-                            # To jest hash, który masz w Excelu (z Twojej Mathematiki)
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
-                            
-                            # --- NOWA LOGIKA HASHOWANIA ---
-                            # Zamieniamy to, co wpisał uczeń, na hash SHA-256
                             hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
                             
                             # Porównujemy hash wpisany z hashem z Excela
@@ -81,8 +76,7 @@ else:
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # Po prostu ładujemy panel, a style CSS z styles.py 
-        # same "wyczują", że to telefon i naprawią kolory.
         student_panel.show_panel(st.session_state.dane)
+
 
 
