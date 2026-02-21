@@ -29,9 +29,7 @@ def wczytaj_dane():
     except:
         return None, None
         
-# To pokaże nam dokładnie, jakie nazwy kolumn widzi Python
-st.write("DEBUG - Surowe nazwy kolumn w Pythonie:")
-st.code(df.columns.tolist())
+
 
 # --- SESJA ---
 if "zalogowany" not in st.session_state:
@@ -65,6 +63,11 @@ if not st.session_state.zalogowany:
                             
                             # Porównujemy hash wpisany z hashem z Excela
                             if hash_wpisany == poprawne_haslo:
+                                # Przykład użycia przy wyświetlaniu
+for kolumna in df_w.columns:
+    for klucz, tlumaczenie in mapa_nazw.items():
+        if klucz.lower() in kolumna.lower():
+            # ZNALAZŁO! Użyj tlumaczenie
                             # ------------------------------
                                 st.session_state.update({
                                     "zalogowany": True, 
@@ -81,6 +84,7 @@ else:
         admin_panel.show_panel(df_w)
     else:
         student_panel.show_panel(st.session_state.dane)
+
 
 
 
