@@ -3,20 +3,20 @@ import re
 import pandas as pd
 
 def show_panel(wiersz_ucznia):
-    # Nag艂贸wek w jednej linii: [Powitanie, Drabinka, Przycisk]
+    # Nagłówek w jednej linii: [Powitanie, Drabinka, Przycisk]
     c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
 
     with c_pow:
-        # Pobieramy pe艂ny tekst, dzielimy go na wyrazy i bierzemy drugi element (imi臋)
+        # Pobieramy pełny tekst, dzielimy go na wyrazy i bierzemy drugi element (imię)
         pelne_dane = str(wiersz_ucznia.iloc[0, 1])
         imie = pelne_dane.split()[1] if len(pelne_dane.split()) > 1 else pelne_dane
-        st.subheader(f"馃憢 {imie}!")
+        st.subheader(f"👋 {imie}!")
 
     with c_progi:
         p1, p2, p3, p4, p5, p6 = st.columns(6)
         
-        # Definicje styl贸w dla ka偶dego koloru z osobna, by unikn膮膰 zlewania si臋 z t艂em
-        # s_w = napisy bia艂e, s_b = napisy czarne
+        # Definicje stylów dla każdego koloru z osobna, by uniknąć zlewania się z tłem
+        # s_w = napisy białe, s_b = napisy czarne
         s_w = 'display:block; color:white; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
         s_b = 'display:block; color:black; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
         
@@ -34,7 +34,7 @@ def show_panel(wiersz_ucznia):
 
     st.write("---")
 
-    # 2. TABELA WYNIK脫W (Wy艣wietlamy orygina艂 bez zmian)
+    # 2. TABELA WYNIKÓW (Wyświetlamy oryginał bez zmian)
     st.markdown('<div class="table-container">', unsafe_allow_html=True)
     widok_ucznia = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
     html_table = widok_ucznia.to_html(index=False, classes='tales-table', border=0)
@@ -48,12 +48,12 @@ def show_panel(wiersz_ucznia):
     kol_info = wiersz_clean.columns
     
     mapa_nazw = {
-        "Log+zb": "logika i zbiory", "ci膮gi": "ci膮gi", "funkcje": "funkcje",
+        "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
         "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
-        "uk_r_l": "uk艂ady r贸wna艅 liniowych", "Liczby zesp": "liczby zespolone",
-        "ca艂ka nieozn.": "ca艂ka nieoznaczona", "ca艂ka oznacz.": "ca艂ka oznaczona",
-        "geometria an.": "geometria analityczna", "f(x,y)": "funkcje dw贸ch zmiennych",
-        "r贸wn. r贸偶.": "r贸wnania r贸偶niczkowe"
+        "uk_r_l": "układy równań liniowych", "Liczby zesp": "liczby zespolone",
+        "całka nieozn.": "całka nieoznaczona", "całka oznacz.": "całka oznaczona",
+        "geometria an.": "geometria analityczna", "f(x,y)": "funkcje dwóch zmiennych",
+        "równ. róż.": "równania różniczkowe"
     }
 
     zdane = []
@@ -77,39 +77,39 @@ def show_panel(wiersz_ucznia):
         except:
             continue
 
-    # Pobieramy sum臋 ca艂kowit膮 (zgodnie z testem jest na indeksie 16)
-    # Pobieramy sum臋 bezpo艣rednio z indeksu 16 (tak jak poda艂e艣)
+    # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
+    # Pobieramy sumę bezpośrednio z indeksu 16 (tak jak podałeś)
     try:
         suma_total = float(dane[15])
     except:
         suma_total = 0.0
 
-    # 5. WY艢WIETLANIE W DW脫CH PO艁OWACH
+    # 5. WYŚWIETLANIE W DWÓCH POŁOWACH
     st.write("") 
     col_lewa, col_prawa = st.columns(2)
 
-    # Pobieramy ocen臋 (indeks 16) i sum臋 (indeks 15)
+    # Pobieramy ocenę (indeks 16) i sumę (indeks 15)
     ocena = str(dane[16]).strip() if dane[16] not in [0, "0", None, "nan"] else ""
     suma_total = float(dane[15]) if dane[15] not in [None, "nan", ""] else 0.0
 
     with col_lewa:
-        st.info("**鉁?Zdane dzia艂y:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
+        st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
         
-        # Logika oceny / punkt贸w
+        # Logika oceny / punktów
         if ocena and ocena != "":
-            st.success(f"馃帗 **Twoja ocena to: {ocena}**")
+            st.success(f"🎓 **Twoja ocena to: {ocena}**")
         else:
-            # Zamiast komunikatu o braku oceny, pokazujemy sum臋 punkt贸w
-            st.info(f"馃搳 **Zdoby艂e艣 {suma_total:.1f} punkt贸w**")
+            # Zamiast komunikatu o braku oceny, pokazujemy sumę punktów
+            st.info(f"📊 **Zdobyłeś {suma_total:.1f} punktów**")
 
     with col_prawa:
-        st.warning("**馃殌 Do robienia: dzia艂y**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
+        st.warning("**🚀 Do robienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
         
-        # Sekcja brakuj膮cych punkt贸w (tylko je艣li brak oceny)
+        # Sekcja brakujących punktów (tylko jeśli brak oceny)
         if not ocena:
             if suma_total < 40.5:
                 brakujace = 40.5 - suma_total
-                st.error(f"馃搲 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
+                st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
 
