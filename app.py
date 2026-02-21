@@ -63,19 +63,35 @@ if not st.session_state.zalogowany:
                             
                             # Porównujemy hash wpisany z hashem z Excela
                             if hash_wpisany == poprawne_haslo:
-                                # Przykład użycia przy wyświetlaniu
-for kolumna in df_w.columns:
-    for klucz, tlumaczenie in mapa_nazw.items():
-        if klucz.lower() in kolumna.lower():
-            # ZNALAZŁO! Użyj tlumaczenie
-                            # ------------------------------
+                                
+                                # --- MIEJSCE NA TWOJE TŁUMACZENIA / DEBUG ---
+                                # Przykład użycia przy wyświetlaniu nazw kolumn
+                                for kolumna in df_w.columns:
+                                    # Zamieniamy krotki (tuples) na stringi, jeśli używasz MultiIndex
+                                    col_str = str(kolumna).lower()
+                                    for klucz, tlumaczenie in mapa_nazw.items():
+                                        if klucz.lower() in col_str:
+                                            # Tutaj możesz coś zrobić z dopasowaniem, 
+                                            # np. st.write(f"Znalazłem: {tlumaczenie}")
+                                            pass 
+                                
+                                # --- DEBUG - WYŚWIETLANIE LISTY KOLUMN ---
+                                st.write("### 🐞 DEBUG KOLUMN")
+                                st.code(df_w.columns.tolist())
+                                
+                                # ------------------------------
                                 st.session_state.update({
                                     "zalogowany": True, 
                                     "rola": "uczen", 
                                     "dane": df_w.iloc[[idx]]
                                 })
-                                st.rerun()
-                st.error("Błędny login lub hasło.")
+                                
+                                # UWAGA: Jeśli chcesz zobaczyć DEBUG na ekranie, 
+                                # musisz na chwilę zakomentować poniższy st.rerun()
+                                # st.rerun() 
+                                
+                else:
+                    st.error("Błędny login lub hasło.")
 
 else:
     # Sekcja wyświetlania po zalogowaniu
@@ -84,6 +100,7 @@ else:
         admin_panel.show_panel(df_w)
     else:
         student_panel.show_panel(st.session_state.dane)
+
 
 
 
