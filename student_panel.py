@@ -1,120 +1,84 @@
 import streamlit as st
-import re
 import pandas as pd
+import os
+import hashlib
+import glob
+import styles
+import admin_panel
+import student_panel
 
-def show_panel(wiersz_ucznia):
-    # Nagłówek w jednej linii: [Powitanie, Drabinka, Przycisk]
-    c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
+st.set_page_config(page_title="RB oceny", layout="wide")
+styles.apply_styles()
 
-    with c_pow:
-        # Pobieramy pełny tekst, dzielimy go na wyrazy i bierzemy drugi element (imię)
-        pelne_dane = str(wiersz_ucznia.iloc[0, 1])
-        imie = pelne_dane.split()[1] if len(pelne_dane.split()) > 1 else pelne_dane
-        st.subheader(f"👋 {imie}!")
+# --- FUNKCJE ---
+def check_admin_password(input_password):
+    stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
+    return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
-    with c_progi:
-        p1, p2, p3, p4, p5, p6 = st.columns(6)
-        
-        # Definicje stylów dla każdego koloru z osobna, by uniknąć zlewania się z tłem
-        # s_w = napisy białe, s_b = napisy czarne
-        s_w = 'display:block; color:white; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
-        s_b = 'display:block; color:black; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
-        
-        p1.markdown(f'<div style="{s_w} background-color:#FF0000;">ocena 2:<br>(0-40]</div>', unsafe_allow_html=True)
-        p2.markdown(f'<div style="{s_b} background-color:#92D050;">ocena 3:<br>(40-52]</div>', unsafe_allow_html=True)
-        p3.markdown(f'<div style="{s_w} background-color:#00B050;">ocena 3.5:<br>(52-64]</div>', unsafe_allow_html=True)
-        p4.markdown(f'<div style="{s_w} background-color:#00B0F0;">ocena 4:<br>(64-76]</div>', unsafe_allow_html=True)
-        p5.markdown(f'<div style="{s_w} background-color:#0070C0;">ocena 4.5:<br>(76-88]</div>', unsafe_allow_html=True)
-        p6.markdown(f'<div style="{s_b} background-color:#FFC000;">ocena 5:<br>(88-100]</div>', unsafe_allow_html=True)
-
-    with c_btn:
-        if st.button("Wyloguj", use_container_width=True):
-            st.session_state.clear()
-            st.rerun()
-
-    st.write("---")
-
-    # 2. TABELA WYNIKÓW (Wyświetlamy oryginał bez zmian)
-    st.markdown('<div class="table-container">', unsafe_allow_html=True)
-    widok_ucznia = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
-    html_table = widok_ucznia.to_html(index=False, classes='tales-table', border=0)
-    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
-    st.markdown(html_table, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 3. PRZYGOTOWANIE LOGIKI (Mapowanie i czyszczenie NaN)
-    wiersz_clean = wiersz_ucznia.fillna(0)
-    dane = wiersz_clean.iloc[0].values
-    kol_info = wiersz_clean.columns
+def wczytaj_dane():
+    pliki = glob.glob("*.xlsx")
+    if not pliki:
+        return None, None
     
-    mapa_nazw = {
-        "Log+zb": "logika i zbiory",
-        "ciągi": "ciągi", 
-        "funkcje": "funkcje",
-        "poch.": "pochodna", 
-        "mac+wyz": "macierze i wyznaczniki",
-        "uk_r_l": "układy równań liniowych", 
-        "Liczby zesp.": "liczby zespolone",
-        "całka nieozn.": "całka nieoznaczona", 
-        "całka oznacz.": "całka oznaczona",
-        "geometria an.": "geometria analityczna", 
-        "f(x,y)": "funkcje dwóch zmiennych",
-        "równ. róż.": "równania różniczkowe"
-    }
-
-    zdane = []
-    do_zrobienia = []
-
-    # Analiza par od indeksu 4 (Log+zb) do 15
-    for i in range(3, 14, 2):
-        try:
-            raw_name = str(kol_info[i][1])
-            if "Unnamed" in raw_name: continue
-            
-            clean_key = raw_name.split(" ")[0]
-            nazwa_finalna = mapa_nazw.get(clean_key, raw_name)
-
-            suma_pary = float(dane[i]) + float(dane[i+1])
-            
-            if suma_pary >= 4.5:
-                zdane.append(nazwa_finalna)
-            else:
-                do_zrobienia.append(nazwa_finalna)
-        except:
-            continue
-
-    # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
+    sciezka = pliki[0]
     try:
-        suma_total = float(dane[15])
+        # header=[0,1,2] dla zachowania struktury MultiIndex
+        df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
+        df_h = pd.read_excel(sciezka, sheet_name='Arkusz2', header=None)
+        df_h.columns = ["Lp", "Haslo"]
+        return df_w, df_h
     except:
-        suma_total = 0.0
+        return None, None
 
-    # 5. WYŚWIETLANIE W DWÓCH POŁOWACH
-    st.write("") 
-    col_lewa, col_prawa = st.columns(2)
+# --- SESJA ---
+if "zalogowany" not in st.session_state:
+    st.session_state.update({"zalogowany": False, "rola": None, "dane": None})
 
-    # Pobieramy ocenę (indeks 16) i sumę (indeks 15)
-    ocena = str(dane[16]).strip() if dane[16] not in [0, "0", None, "nan"] else ""
-    suma_total = float(dane[15]) if dane[15] not in [None, "nan", ""] else 0.0
-
-    with col_lewa:
-        st.info("**✅ Zdane działy:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
-        
-        # Logika oceny / punktów
-        if ocena and ocena != "":
-            st.success(f"🎓 **Twoja ocena to: {ocena}**")
-        else:
-            # Zamiast komunikatu o braku oceny, pokazujemy sumę punktów
-            st.info(f"📊 **Zdobyłeś {suma_total:.1f} punktów**")
-
-    with col_prawa:
-        st.warning("**🚀 Do robienia: działy**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
-        
-        # Sekcja brakujących punktów (tylko jeśli brak oceny)
-        if not ocena:
-            if suma_total < 40.5:
-                brakujace = 40.5 - suma_total
-                st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
+# --- LOGIKA ---
+if not st.session_state.zalogowany:
+    st.title("🛡️ RB oceny")
+    with st.form("log_form"):
+        uzytkownik = st.text_input("Nazwisko / Identyfikator:")
+        haslo_wpisane = st.text_input("Hasło:", type="password")
+        if st.form_submit_button("Zaloguj się", use_container_width=True):
+            login_clean = uzytkownik.strip().lower()
+            pass_clean = haslo_wpisane.strip()
+            
+            if login_clean == "admin" and check_admin_password(pass_clean):
+                st.session_state.update({"zalogowany": True, "rola": "admin"})
+                st.rerun()
             else:
-                st.success("")
+                df_w, df_h = wczytaj_dane()
+                if df_w is not None:
+                    # Szukamy nazwiska w kolumnie 1
+                    nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
+                    if login_clean in nazwiska:
+                        idx = nazwiska.index(login_clean)
+                        lp = df_w.iloc[idx, 0]
+                        pass_row = df_h[df_h["Lp"] == lp]
+                        
+                        if not pass_row.empty:
+                            poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
+                            hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
+                            
+                            # CZYSTE LOGOWANIE: Jeśli hash pasuje, wpuszczamy
+                            if hash_wpisany == poprawne_haslo:
+                                st.session_state.update({
+                                    "zalogowany": True, 
+                                    "rola": "uczen", 
+                                    "dane": df_w.iloc[[idx]] # Przekazujemy czysty wiersz z MultiIndexem
+                                })
+                                st.rerun()
+                            else:
+                                st.error("Błędne hasło.")
+                    else:
+                        st.error("Błędny login lub hasło.")
 
+else:
+    # Sekcja wyświetlania po zalogowaniu
+    df_w, _ = wczytaj_dane()
+    if st.session_state.rola == "admin":
+        admin_panel.show_panel(df_w)
+    else:
+        # Tu student_panel zajmie się tłumaczeniem (u siebie, gdzie ma mapę)
+        student_panel.show_panel(st.session_state.dane)
