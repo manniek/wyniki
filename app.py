@@ -12,7 +12,6 @@ styles.apply_styles()
 
 # --- FUNKCJE ---
 def check_admin_password(input_password):
-    # Hasło admina: 123admin
     stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
     return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
@@ -57,7 +56,7 @@ if not st.session_state.zalogowany:
                         pass_row = df_h[df_h["Lp"] == lp]
                         
                         if not pass_row.empty:
-                            # To jest hash, który masz w Excelu (z Twojej Mathematiki)
+                            # To jest hash, który masz w Excelu (z Mathematiki)
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
                             
                             # --- NOWA LOGIKA HASHOWANIA ---
@@ -84,5 +83,6 @@ else:
         # Po prostu ładujemy panel, a style CSS z styles.py 
         # same "wyczują", że to telefon i naprawią kolory.
         student_panel.show_panel(st.session_state.dane)
+
 
 
