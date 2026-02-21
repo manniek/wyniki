@@ -50,7 +50,7 @@ def show_panel(wiersz_ucznia):
     mapa_nazw = {
         "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
         "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
-        "uk_r_l": "układy równań liniowych", "Liczby zesp": "liczby zespolone",
+        "uk_r_l": "układy równań liniowych", "Liczby zesp.": "liczby zespolone",
         "całka nieozn.": "całka nieoznaczona", "całka oznacz.": "całka oznaczona",
         "geometria an.": "geometria analityczna", "f(x,y)": "funkcje dwóch zmiennych",
         "równ. róż.": "równania różniczkowe"
@@ -78,7 +78,6 @@ def show_panel(wiersz_ucznia):
             continue
 
     # Pobieramy sumę całkowitą (zgodnie z testem jest na indeksie 16)
-    # Pobieramy sumę bezpośrednio z indeksu 16 (tak jak podałeś)
     try:
         suma_total = float(dane[15])
     except:
@@ -112,14 +111,3 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
-
-
-
-
-
-
-
-
-
-
-
