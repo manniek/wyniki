@@ -62,33 +62,54 @@ if not st.session_state.zalogowany:
                             hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
                             
                             # Porównujemy hash wpisany z hashem z Excela
+                            # Porównujemy hash wpisany z hashem z Excela
                             if hash_wpisany == poprawne_haslo:
                                 
-                                # --- MIEJSCE NA TWOJE TŁUMACZENIA / DEBUG ---
-                                # Przykład użycia przy wyświetlaniu nazw kolumn
-                                for kolumna in df_w.columns:
-                                    # Zamieniamy krotki (tuples) na stringi, jeśli używasz MultiIndex
-                                    col_str = str(kolumna).lower()
-                                    for klucz, tlumaczenie in mapa_nazw.items():
-                                        if klucz.lower() in col_str:
-                                            # Tutaj możesz coś zrobić z dopasowaniem, 
-                                            # np. st.write(f"Znalazłem: {tlumaczenie}")
-                                            pass 
+                                # 1. SPŁASZCZANIE NAZW KOLUMN (Rozprawiamy się z MultiIndexem)
+                                # Zmienia ('Działy', 'Liczby zesp.', 'a') na "Liczby zesp. a"
+                                nowe_nazwy = []
+                                for col in df_w.columns:
+                                    # Pobieramy tylko te części, które nie są "Unnamed"
+                                    czesci = [str(poziom) for poziom in col if "Unnamed" not in str(poziom)]
+                                    # Usuwamy słowo "Działy" z nazwy, żeby nie śmieciło (opcjonalnie)
+                                    if "Działy" in czesci: czesci.remove("Działy")
+                                    nowe_nazwy.append(" ".join(czesci).strip())
                                 
-                                # --- DEBUG - WYŚWIETLANIE LISTY KOLUMN ---
-                                st.write("### 🐞 DEBUG KOLUMN")
-                                st.code(df_w.columns.tolist())
-                                
-                                # ------------------------------
+                                df_w.columns = nowe_nazwy
+
+                                # 2. TŁUMACZENIE (Tworzymy listę zdanych działów dla ucznia)
+                                wiersz_ucznia = df_w.iloc[idx]
+                                zdane_przetlumaczone = []
+
+                                for col_name in df_w.columns:
+                                    # Sprawdzamy czy w danej kolumnie jest "zal" lub "1" (dostosuj do swojego Excela)
+                                    if str(wiersz_ucznia[col_name]).lower() in ["zal", "1", "1.0", "x"]:
+                                        
+                                        # Szukamy czy nazwa kolumny pasuje do naszej mapy
+                                        znaleziono = False
+                                        for klucz, tlumaczenie in mapa_nazw.items():
+                                            if klucz.lower() in col_name.lower():
+                                                zdane_przetlumaczone.append(tlumaczenie)
+                                                znaleziono = True
+                                                break
+                                        
+                                        # Jeśli nie ma w mapie, dodaj surową nazwę (np. "dupa")
+                                        if not znaleziono and col_name not in ["Lp.", "NAZWISKO I IMIĘ", "Pkt", "Ocena"]:
+                                            zdane_przetlumaczone.append(col_name)
+
+                                # 3. ZAPIS DO SESJI
                                 st.session_state.update({
                                     "zalogowany": True, 
                                     "rola": "uczen", 
-                                    "dane": df_w.iloc[[idx]]
+                                    "dane": df_w.iloc[[idx]],
+                                    "zdane_list": list(set(zdane_przetlumaczone)) # set usuwa duplikaty a i b,c
                                 })
                                 
-                                # UWAGA: Jeśli chcesz zobaczyć DEBUG na ekranie, 
-                                # musisz na chwilę zakomentować poniższy st.rerun()
-                                # st.rerun() 
+                                # Debugowanie - teraz zobaczysz czy działa!
+                                st.success(f"Zalogowano! Twoje działy: {', '.join(zdane_przetlumaczone)}")
+                                
+                                # Odkomentuj rerun po sprawdzeniu czy napisy są poprawne
+                                # st.rerun()
                                 
                 else:
                     st.error("Błędny login lub hasło.")
@@ -100,6 +121,7 @@ else:
         admin_panel.show_panel(df_w)
     else:
         student_panel.show_panel(st.session_state.dane)
+
 
 
 
