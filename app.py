@@ -28,6 +28,7 @@ def wczytaj_dane():
         return df_w, df_h
     except:
         return None, None
+        
 
 # --- SESJA ---
 if "zalogowany" not in st.session_state:
@@ -59,23 +60,22 @@ if not st.session_state.zalogowany:
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
                             hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
                             
+                            # Logowanie - bez zbędnego dopisanego kodu
                             if hash_wpisany == poprawne_haslo:
-                                # TUTAJ BYŁO TO "GÓWNO" - ZOSTAŁO USUNIĘTE.
-                                # TYLKO LOGUJEMY I PRZEKAZUJEMY DANE.
+                                
+                                # ZAPIS DO SESJI (Tak jak miałeś oryginalnie)
                                 st.session_state.update({
                                     "zalogowany": True, 
                                     "rola": "uczen", 
                                     "dane": df_w.iloc[[idx]]
                                 })
                                 st.rerun()
-                            else:
-                                st.error("Błędne hasło.")
-                    else:
-                        st.error("Nie znaleziono użytkownika.")
+                                
                 else:
-                    st.error("Błąd wczytywania danych.")
+                    st.error("Błędny login lub hasło.")
 
 else:
+    # Sekcja wyświetlania po zalogowaniu
     df_w, _ = wczytaj_dane()
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
