@@ -3,51 +3,43 @@ import pandas as pd
 import re
 
 def show_panel(wiersz_ucznia):
-    # 1. POBIERANIE DANYCH (Twoja logika z wersji mobilnej)
+    # 1. POBIERANIE DANYCH (Logika z Twojego mobile_panel.py)
     wiersz_clean = wiersz_ucznia.fillna(0)
     dane = wiersz_clean.iloc[0].values
     kol_info = wiersz_clean.columns
 
-    # Wyciąganie imienia z kolumny 1
     pelne_dane = str(dane[1])
     imie = pelne_dane.split()[1] if len(pelne_dane.split()) > 1 else pelne_dane
-    
-    # Wyciąganie punktów (kolumna 15) i oceny (kolumna 16)
     suma_total = float(dane[15])
     ocena = str(dane[16]).strip() if dane[16] not in [0, "0", None, "nan"] else ""
 
-    # 2. NAGŁÓWEK (Układ komputerowy, kolory z mobilnego)
-    c_pow, c_progi, c_btn = st.columns([3, 5, 2])
+    # 2. NAGŁÓWEK (Układ na komputer)
+    c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
     
     with c_pow:
-        st.markdown(f"""
-            <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; border: 1px solid #333;">
-                <h3 style="color: #FFFFFF; margin: 0;">👋 Witaj, {imie}!</h3>
-            </div>
-        """, unsafe_allow_html=True)
+        st.subheader(f"👋 {imie}!")
 
     with c_progi:
-        # Drabinka ocen z Twoimi kolorami (styl wymuszony kontrast)
+        # Twoja drabinka ocen (kolory standardowe, układ poziomy)
         p = st.columns(6)
-        progi_style = [
-            ("#FF0000", "white", "2", "(0-40]"),
-            ("#92D050", "black", "3", "(40-52]"),
-            ("#00B050", "white", "3.5", "(52-64]"),
-            ("#00B0F0", "white", "4", "(64-76]"),
-            ("#0070C0", "white", "4.5", "(76-88]"),
-            ("#FFC000", "black", "5", "(88-100]")
-        ]
-        for i, (bg, fg, oc, pr) in enumerate(progi_style):
-            p[i].markdown(f'<div style="background-color:{bg}; color:{fg}; padding:5px; border-radius:5px; text-align:center; font-size:10px; font-weight:bold;">{oc}<br>{pr}</div>', unsafe_allow_html=True)
+        s_w = 'display:block; color:white; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
+        s_b = 'display:block; color:black; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
+        
+        p[0].markdown(f'<div style="{s_w} background-color:#FF0000;">2<br>(0-40]</div>', unsafe_allow_html=True)
+        p[1].markdown(f'<div style="{s_b} background-color:#92D050;">3<br>(40-52]</div>', unsafe_allow_html=True)
+        p[2].markdown(f'<div style="{s_w} background-color:#00B050;">3.5<br>(52-64]</div>', unsafe_allow_html=True)
+        p[3].markdown(f'<div style="{s_w} background-color:#00B0F0;">4<br>(64-76]</div>', unsafe_allow_html=True)
+        p[4].markdown(f'<div style="{s_w} background-color:#0070C0;">4.5<br>(76-88]</div>', unsafe_allow_html=True)
+        p[5].markdown(f'<div style="{s_b} background-color:#FFC000;">5<br>(88-100]</div>', unsafe_allow_html=True)
 
     with c_btn:
-        if st.button("🔴 WYLOGUJ", use_container_width=True):
+        if st.button("Wyloguj", use_container_width=True):
             st.session_state.clear()
             st.rerun()
 
-    st.divider()
+    st.write("---")
 
-    # 3. TABELA WYNIKÓW (Oryginalna, bez spłaszczania)
+    # 3. TABELA (Twoja oryginalna metoda)
     st.markdown('<div class="table-container">', unsafe_allow_html=True)
     widok_tabela = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
     html_table = widok_tabela.to_html(index=False, classes='tales-table', border=0)
@@ -55,9 +47,7 @@ def show_panel(wiersz_ucznia):
     st.markdown(html_table, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.write("")
-
-    # 4. LOGIKA OSIĄGNIĘĆ (Na podstawie Twoich plików)
+    # 4. LOGIKA OSIĄGNIĘĆ (Z mobile_panel.py)
     mapa_nazw = {
         "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
         "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
@@ -70,14 +60,12 @@ def show_panel(wiersz_ucznia):
     zdane = []
     do_zrobienia = []
 
-    # Analiza par działy (od kolumny 3 do 14)
     for i in range(3, 14, 2):
         try:
             raw_name = str(kol_info[i][1])
             if "Unnamed" in raw_name: continue
             clean_key = raw_name.split(" ")[0]
             nazwa_finalna = mapa_nazw.get(clean_key, raw_name)
-            
             suma_pary = float(dane[i]) + float(dane[i+1])
             if suma_pary >= 4.5:
                 zdane.append(nazwa_finalna)
@@ -85,7 +73,8 @@ def show_panel(wiersz_ucznia):
                 do_zrobienia.append(nazwa_finalna)
         except: continue
 
-    # 5. WYŚWIETLANIE STATUSU (Z Twojego mobile_panel)
+    # 5. WYNIKI POD TABELĄ (Dwie kolumny, logika z mobile)
+    st.write("")
     col_l, col_p = st.columns(2)
 
     with col_l:
@@ -93,7 +82,7 @@ def show_panel(wiersz_ucznia):
         if ocena:
             st.success(f"### 🎓 Twoja ocena: {ocena}")
         else:
-            st.metric("Twoje punkty", f"{suma_total:.1f} pkt")
+            st.metric("Suma punktów", f"{suma_total:.1f} pkt")
 
     with col_p:
         st.warning("**🚀 Do zrobienia:**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko zaliczone!"))
