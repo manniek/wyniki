@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 import hashlib
 import glob
 import styles
@@ -9,23 +10,30 @@ import student_panel
 st.set_page_config(page_title="RB oceny", layout="wide")
 styles.apply_styles()
 
+# --- FUNKCJE ---
 def check_admin_password(input_password):
     stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
     return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
 
 def wczytaj_dane():
     pliki = glob.glob("*.xlsx")
-    if not pliki: return None, None
+    if not pliki:
+        return None, None
+    
+    sciezka = pliki[0]
     try:
-        df_w = pd.read_excel(pliki[0], sheet_name='Arkusz1', header=[0,1,2])
-        df_h = pd.read_excel(pliki[0], sheet_name='Arkusz2', header=None)
+        df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
+        df_h = pd.read_excel(sciezka, sheet_name='Arkusz2', header=None)
         df_h.columns = ["Lp", "Haslo"]
         return df_w, df_h
-    except: return None, None
+    except:
+        return None, None
 
+# --- SESJA ---
 if "zalogowany" not in st.session_state:
     st.session_state.update({"zalogowany": False, "rola": None, "dane": None})
 
+# --- LOGIKA ---
 if not st.session_state.zalogowany:
     st.title("🛡️ RB oceny")
     with st.form("log_form"):
@@ -46,15 +54,30 @@ if not st.session_state.zalogowany:
                         idx = nazwiska.index(login_clean)
                         lp = df_w.iloc[idx, 0]
                         pass_row = df_h[df_h["Lp"] == lp]
+                        
                         if not pass_row.empty:
-                            if hashlib.sha256(pass_clean.encode()).hexdigest() == str(pass_row.iloc[0, 1]).strip():
-                                st.session_state.update({"zalogowany": True, "rola": "uczen", "dane": df_w.iloc[[idx]]})
+                            poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
+                            hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
+                            
+                            if hash_wpisany == poprawne_haslo:
+                                # TUTAJ BYŁO TO "GÓWNO" - ZOSTAŁO USUNIĘTE.
+                                # TYLKO LOGUJEMY I PRZEKAZUJEMY DANE.
+                                st.session_state.update({
+                                    "zalogowany": True, 
+                                    "rola": "uczen", 
+                                    "dane": df_w.iloc[[idx]]
+                                })
                                 st.rerun()
-                            else: st.error("Błędne hasło.")
-                    else: st.error("Nie znaleziono użytkownika.")
+                            else:
+                                st.error("Błędne hasło.")
+                    else:
+                        st.error("Nie znaleziono użytkownika.")
+                else:
+                    st.error("Błąd wczytywania danych.")
+
 else:
+    df_w, _ = wczytaj_dane()
     if st.session_state.rola == "admin":
-        df_w, _ = wczytaj_dane()
         admin_panel.show_panel(df_w)
     else:
         student_panel.show_panel(st.session_state.dane)
