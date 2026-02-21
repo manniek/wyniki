@@ -1,9 +1,9 @@
 import streamlit as st
-import re
 import pandas as pd
+import re
 
 def show_panel(wiersz_ucznia):
-    # 1. MAPA NAZW (Tłumaczymy skróty z Excela na ładne nazwy)
+    # --- 1. TWOJA MAPA NAZW (Z TWOJEGO KODU) ---
     mapa_nazw = {
         "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
         "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
@@ -13,9 +13,8 @@ def show_panel(wiersz_ucznia):
         "równ. róż.": "równania różniczkowe"
     }
 
-    # Nagłówek w Twoim stylu: [Powitanie, Drabinka, Przycisk]
+    # --- 2. NAGŁÓWEK (TWÓJ UKŁAD 2.5, 5.5, 2) ---
     c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
-
     with c_pow:
         pelne_dane = str(wiersz_ucznia.iloc[0, 1])
         czesci = pelne_dane.split()
@@ -40,60 +39,48 @@ def show_panel(wiersz_ucznia):
 
     st.write("---")
 
-    # TWOJA ORYGINALNA TABELA WYNIKÓW
-    st.markdown('<div class="table-container">', unsafe_allow_html=True)
-    widok_ucznia = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
-    html_table = widok_ucznia.to_html(index=False, classes='tales-table', border=0)
-    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
-    st.markdown(html_table, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # --- 3. TWOJA LOGIKA PRZETWARZANIA (DOKŁADNIE TAK JAK MIAŁEŚ W APP.PY) ---
+    df_temp = wiersz_ucznia.copy()
+    
+    # Spłaszczanie nazw kolumn (Twoja pętla)
+    nowe_nazwy = []
+    for col in df_temp.columns:
+        czesci_col = [str(poziom) for poziom in col if "Unnamed" not in str(poziom)]
+        if "Działy" in czesci_col: czesci_col.remove("Działy")
+        nowe_nazwy.append(" ".join(czesci_col).strip())
+    df_temp.columns = nowe_nazwy
+
+    # Wykrywanie zdanych (Twoja logika z "zal", "1", "x")
+    wiersz_danych = df_temp.iloc[0]
+    zdane_przetlumaczone = []
+
+    for col_name in df_temp.columns:
+        wartosc = str(wiersz_danych[col_name]).lower()
+        if wartosc in ["zal", "1", "1.0", "x"]:
+            znaleziono = False
+            for klucz, tlumaczenie in mapa_nazw.items():
+                if klucz.lower() in col_name.lower():
+                    zdane_przetlumaczone.append(tlumaczenie)
+                    znaleziono = True
+                    break
+            if not znaleziono and col_name not in ["Lp.", "NAZWISKO I IMIĘ", "Pkt", "Ocena"]:
+                zdane_przetlumaczone.append(col_name)
+
+    # Usuwanie duplikatów (Twoje set)
+    zdane_list = list(set(zdane_przetlumaczone))
+
+    # --- 4. WYŚWIETLANIE OSIĄGNIĘĆ (TWOJE SUCCESS) ---
+    if zdane_list:
+        st.success(f"🏆 Twoje zdane działy: {', '.join(zdane_list)}")
+    else:
+        st.info("Brak odnotowanych zaliczeń działów.")
 
     st.write("---")
 
-    # 2. LOGIKA OSIĄGNIĘĆ (POD TABELĄ)
-    st.write("### 🏆 Twoje osiągnięcia:")
-    
-    # Pobieramy dane z wiersza (zamieniamy na float, braki na 0)
-    dane_numeryczne = wiersz_ucznia.fillna(0)
-    
-    zdane = []
-    do_zrobienia = []
-
-    # Pętla po kolumnach działów (od 3 kolumny, skok co 2 - sprawdzamy pary a i b)
-    # Zakładam, że działy zaczynają się od kolumny 3 (indeks 3)
-    for i in range(3, 27, 2):
-        try:
-            # Nazwa działu z pierwszego poziomu nagłówka
-            raw_name = wiersz_ucznia.columns[i][1] 
-            nazwa_ladna = mapa_nazw.get(raw_name, raw_name)
-            
-            # Sumujemy punkty z kolumny 'a' i 'b' dla danego działu
-            pkt_a = float(dane_numeryczne.iloc[0, i])
-            pkt_b = float(dane_numeryczne.iloc[0, i+1])
-            suma = pkt_a + pkt_b
-            
-            if suma >= 4.5:
-                zdane.append(nazwa_ladna)
-            else:
-                do_zrobienia.append(nazwa_ladna)
-        except:
-            continue
-
-    # Wyświetlanie w dwóch kolumnach pod tabelą
-    col_zdane, col_do = st.columns(2)
-    
-    with col_zdane:
-        st.success("**✅ Zdane działy:**")
-        if zdane:
-            for z in zdane:
-                st.write(f"✔️ {z}")
-        else:
-            st.write("Brak zdanych działów.")
-
-    with col_do:
-        st.warning("**🚀 Do poprawy/zrobienia:**")
-        if do_zrobienia:
-            for d in do_zrobienia:
-                st.write(f"❌ {d}")
-        else:
-            st.write("Gratulacje! Wszystko zdane!")
+    # --- 5. TWOJA TABELA HTML (Z REGEXEM) ---
+    st.markdown('<div class="table-container">', unsafe_allow_html=True)
+    widok_tabela = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
+    html_table = widok_tabela.to_html(index=False, classes='tales-table', border=0)
+    html_table = re.sub(r'Unnamed: [\w_]+_level_\d+', '', html_table)
+    st.markdown(html_table, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
