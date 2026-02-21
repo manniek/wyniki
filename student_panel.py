@@ -22,7 +22,6 @@ def wczytaj_dane():
     
     sciezka = pliki[0]
     try:
-        # header=[0,1,2] dla zachowania struktury MultiIndex
         df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
         df_h = pd.read_excel(sciezka, sheet_name='Arkusz2', header=None)
         df_h.columns = ["Lp", "Haslo"]
@@ -40,6 +39,7 @@ if not st.session_state.zalogowany:
     with st.form("log_form"):
         uzytkownik = st.text_input("Nazwisko / Identyfikator:")
         haslo_wpisane = st.text_input("Hasło:", type="password")
+        
         if st.form_submit_button("Zaloguj się", use_container_width=True):
             login_clean = uzytkownik.strip().lower()
             pass_clean = haslo_wpisane.strip()
@@ -50,7 +50,7 @@ if not st.session_state.zalogowany:
             else:
                 df_w, df_h = wczytaj_dane()
                 if df_w is not None:
-                    # Szukamy nazwiska w kolumnie 1 (indeks 1)
+                    # Szukamy nazwiska w kolumnie 1
                     nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
                     if login_clean in nazwiska:
                         idx = nazwiska.index(login_clean)
@@ -61,7 +61,7 @@ if not st.session_state.zalogowany:
                             poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
                             hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
                             
-                            # PORÓWNANIE HASZA
+                            # CZYSTE LOGOWANIE
                             if hash_wpisany == poprawne_haslo:
                                 st.session_state.update({
                                     "zalogowany": True, 
@@ -71,18 +71,13 @@ if not st.session_state.zalogowany:
                                 st.rerun()
                             else:
                                 st.error("Błędne hasło.")
-                        else:
-                            st.error("Brak hasła dla tego użytkownika.")
                     else:
                         st.error("Nie znaleziono użytkownika.")
-                else:
-                    st.error("Błąd bazy danych (plik Excel).")
 
 else:
-    # Sekcja wyświetlania po zalogowaniu
     df_w, _ = wczytaj_dane()
     if st.session_state.rola == "admin":
         admin_panel.show_panel(df_w)
     else:
-        # PRZEKAZANIE DO STUDENT_PANEL - tam dzieje się cała magia z mapą_nazw
+        # TŁUMACZENIE DZIEJE SIĘ DOPIERO TUTAJ (wewnątrz student_panel)
         student_panel.show_panel(st.session_state.dane)
