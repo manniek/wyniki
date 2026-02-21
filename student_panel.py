@@ -3,7 +3,7 @@ import pandas as pd
 import re
 
 def show_panel(wiersz_ucznia):
-    # --- 1. TWOJA MAPA NAZW (Z TWOJEGO KODU) ---
+    # 1. TWOJA MAPA NAZW
     mapa_nazw = {
         "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
         "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
@@ -13,24 +13,12 @@ def show_panel(wiersz_ucznia):
         "równ. róż.": "równania różniczkowe"
     }
 
-    # --- 2. NAGŁÓWEK (TWÓJ UKŁAD 2.5, 5.5, 2) ---
+    # 2. NAGŁÓWEK (TWÓJ UKŁAD)
     c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
     with c_pow:
         pelne_dane = str(wiersz_ucznia.iloc[0, 1])
-        czesci = pelne_dane.split()
-        imie = czesci[1] if len(czesci) > 1 else pelne_dane
+        imie = pelne_dane.split()[1] if len(pelne_dane.split()) > 1 else pelne_dane
         st.subheader(f"👋 {imie}!")
-
-    with c_progi:
-        p1, p2, p3, p4, p5, p6 = st.columns(6)
-        s_w = 'display:block; color:white; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
-        s_b = 'display:block; color:black; padding:3px 0; text-align:center; border-radius:4px; font-size:11px; font-weight:bold; line-height:1.2;'
-        p1.markdown(f'<div style="{s_w} background-color:#FF0000;">ocena 2:<br>(0-40]</div>', unsafe_allow_html=True)
-        p2.markdown(f'<div style="{s_b} background-color:#92D050;">ocena 3:<br>(40-52]</div>', unsafe_allow_html=True)
-        p3.markdown(f'<div style="{s_w} background-color:#00B050;">ocena 3.5:<br>(52-64]</div>', unsafe_allow_html=True)
-        p4.markdown(f'<div style="{s_w} background-color:#00B0F0;">ocena 4:<br>(64-76]</div>', unsafe_allow_html=True)
-        p5.markdown(f'<div style="{s_w} background-color:#0070C0;">ocena 4.5:<br>(76-88]</div>', unsafe_allow_html=True)
-        p6.markdown(f'<div style="{s_b} background-color:#FFC000;">ocena 5:<br>(88-100]</div>', unsafe_allow_html=True)
 
     with c_btn:
         if st.button("Wyloguj", use_container_width=True):
@@ -39,10 +27,8 @@ def show_panel(wiersz_ucznia):
 
     st.write("---")
 
-    # --- 3. TWOJA LOGIKA PRZETWARZANIA (DOKŁADNIE TAK JAK MIAŁEŚ W APP.PY) ---
+    # 3. TWOJA LOGIKA OSIĄGNIĘĆ (TA CO BYŁA W APP.PY)
     df_temp = wiersz_ucznia.copy()
-    
-    # Spłaszczanie nazw kolumn (Twoja pętla)
     nowe_nazwy = []
     for col in df_temp.columns:
         czesci_col = [str(poziom) for poziom in col if "Unnamed" not in str(poziom)]
@@ -50,7 +36,6 @@ def show_panel(wiersz_ucznia):
         nowe_nazwy.append(" ".join(czesci_col).strip())
     df_temp.columns = nowe_nazwy
 
-    # Wykrywanie zdanych (Twoja logika z "zal", "1", "x")
     wiersz_danych = df_temp.iloc[0]
     zdane_przetlumaczone = []
 
@@ -66,18 +51,13 @@ def show_panel(wiersz_ucznia):
             if not znaleziono and col_name not in ["Lp.", "NAZWISKO I IMIĘ", "Pkt", "Ocena"]:
                 zdane_przetlumaczone.append(col_name)
 
-    # Usuwanie duplikatów (Twoje set)
     zdane_list = list(set(zdane_przetlumaczone))
 
-    # --- 4. WYŚWIETLANIE OSIĄGNIĘĆ (TWOJE SUCCESS) ---
+    # WYŚWIETLANIE OSIĄGNIĘĆ
     if zdane_list:
         st.success(f"🏆 Twoje zdane działy: {', '.join(zdane_list)}")
-    else:
-        st.info("Brak odnotowanych zaliczeń działów.")
 
-    st.write("---")
-
-    # --- 5. TWOJA TABELA HTML (Z REGEXEM) ---
+    # 4. TWOJA TABELA HTML Z REGEXEM
     st.markdown('<div class="table-container">', unsafe_allow_html=True)
     widok_tabela = wiersz_ucznia.iloc[:, :-4].copy().fillna("")
     html_table = widok_tabela.to_html(index=False, classes='tales-table', border=0)
