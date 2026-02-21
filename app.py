@@ -28,6 +28,10 @@ def wczytaj_dane():
         return df_w, df_h
     except:
         return None, None
+        
+# To pokaże nam dokładnie, jakie nazwy kolumn widzi Python
+st.write("DEBUG - Surowe nazwy kolumn w Pythonie:")
+st.code(df.columns.tolist())
 
 # --- SESJA ---
 if "zalogowany" not in st.session_state:
@@ -77,6 +81,7 @@ else:
         admin_panel.show_panel(df_w)
     else:
         student_panel.show_panel(st.session_state.dane)
+
 
 
 
