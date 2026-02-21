@@ -50,10 +50,10 @@ def show_panel(wiersz_ucznia):
     mapa_nazw = {
         "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
         "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
-        "uk_r_l": "układy równań liniowych", "Liczby zesp.": "liczby zespolone",
-        "całka nieozn.": "całka nieoznaczona", "całka oznacz.": "całka oznaczona",
-        "geometria an.": "geometria analityczna", "f(x,y)": "funkcje dwóch zmiennych",
-        "równ. róż.": "równania różniczkowe"
+        "uk_r_l": "układy równań liniowych", "Liczby_zesp.": "liczby zespolone",
+        "całka_nieozn.": "całka_nieoznaczona", "całka_oznacz.": "całka oznaczona",
+        "geometria_an.": "geometria analityczna", "f(x,y)": "funkcje dwóch zmiennych",
+        "równ._róż.": "równania różniczkowe"
     }
 
     zdane = []
@@ -112,6 +112,7 @@ def show_panel(wiersz_ucznia):
                 st.error(f"📉 **Brakuje Ci:** {brakujace:.1f} pkt do zaliczenia")
             else:
                 st.success("")
+
 
 
 
