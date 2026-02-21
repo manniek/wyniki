@@ -1,83 +1,63 @@
 import streamlit as st
 import pandas as pd
-import os
-import hashlib
-import glob
-import styles
-import admin_panel
-import student_panel
+import re
 
-st.set_page_config(page_title="RB oceny", layout="wide")
-styles.apply_styles()
+def show_panel(wiersz_ucznia):
+    # 1. PRZYGOTOWANIE DANYCH I MAPY
+    mapa_nazw = {
+        "Log+zb": "logika i zbiory", "ciągi": "ciągi", "funkcje": "funkcje",
+        "poch.": "pochodna", "mac+wyz": "macierze i wyznaczniki",
+        "uk_r_l": "układy równań liniowych", "Liczby zesp": "liczby zespolone",
+        "całka nieozn.": "całka nieoznaczona", "całka oznacz.": "całka oznaczona",
+        "geometria an.": "geometria analityczna", "f(x,y)": "funkcje dwóch zmiennych",
+        "równ. róż.": "równania różniczkowe"
+    }
 
-# --- FUNKCJE ---
-def check_admin_password(input_password):
-    stored_hash = "cffa965d9faa1d453f2d336294b029a7f84f485f75ce2a2c723065453b12b03b"
-    return hashlib.sha256(input_password.strip().encode()).hexdigest() == stored_hash
-
-def wczytaj_dane():
-    pliki = glob.glob("*.xlsx")
-    if not pliki:
-        return None, None
+    # Spłaszczanie nazw kolumn tylko dla widoku panelu
+    df_temp = wiersz_ucznia.copy()
+    nowe_nazwy = []
+    for col in df_temp.columns:
+        czesci = [str(p) for p in col if "Unnamed" not in str(p)]
+        if "Działy" in czesci: czesci.remove("Działy")
+        nowe_nazwy.append(" ".join(czesci).strip())
+    df_temp.columns = nowe_nazwy
     
-    sciezka = pliki[0]
-    try:
-        df_w = pd.read_excel(sciezka, sheet_name='Arkusz1', header=[0,1,2])
-        df_h = pd.read_excel(sciezka, sheet_name='Arkusz2', header=None)
-        df_h.columns = ["Lp", "Haslo"]
-        return df_w, df_h
-    except:
-        return None, None
+    # 2. NAGŁÓWEK
+    c_pow, c_progi, c_btn = st.columns([2.5, 5.5, 2])
+    with c_pow:
+        pelne_dane = str(df_temp.iloc[0, 1])
+        imie = pelne_dane.split()[1] if len(pelne_dane.split()) > 1 else pelne_dane
+        st.subheader(f"👋 {imie}!")
 
-# --- SESJA ---
-if "zalogowany" not in st.session_state:
-    st.session_state.update({"zalogowany": False, "rola": None, "dane": None})
+    with c_btn:
+        if st.button("Wyloguj"):
+            st.session_state.clear()
+            st.rerun()
 
-# --- LOGIKA ---
-if not st.session_state.zalogowany:
-    st.title("🛡️ RB oceny")
-    with st.form("log_form"):
-        uzytkownik = st.text_input("Nazwisko / Identyfikator:")
-        haslo_wpisane = st.text_input("Hasło:", type="password")
-        
-        if st.form_submit_button("Zaloguj się", use_container_width=True):
-            login_clean = uzytkownik.strip().lower()
-            pass_clean = haslo_wpisane.strip()
-            
-            if login_clean == "admin" and check_admin_password(pass_clean):
-                st.session_state.update({"zalogowany": True, "rola": "admin"})
-                st.rerun()
-            else:
-                df_w, df_h = wczytaj_dane()
-                if df_w is not None:
-                    # Szukamy nazwiska w kolumnie 1
-                    nazwiska = df_w.iloc[:, 1].astype(str).str.strip().str.lower().tolist()
-                    if login_clean in nazwiska:
-                        idx = nazwiska.index(login_clean)
-                        lp = df_w.iloc[idx, 0]
-                        pass_row = df_h[df_h["Lp"] == lp]
-                        
-                        if not pass_row.empty:
-                            poprawne_haslo = str(pass_row.iloc[0, 1]).strip()
-                            hash_wpisany = hashlib.sha256(pass_clean.encode()).hexdigest()
-                            
-                            # CZYSTE LOGOWANIE
-                            if hash_wpisany == poprawne_haslo:
-                                st.session_state.update({
-                                    "zalogowany": True, 
-                                    "rola": "uczen", 
-                                    "dane": df_w.iloc[[idx]] 
-                                })
-                                st.rerun()
-                            else:
-                                st.error("Błędne hasło.")
-                    else:
-                        st.error("Nie znaleziono użytkownika.")
+    st.write("---")
 
-else:
-    df_w, _ = wczytaj_dane()
-    if st.session_state.rola == "admin":
-        admin_panel.show_panel(df_w)
-    else:
-        # TŁUMACZENIE DZIEJE SIĘ DOPIERO TUTAJ (wewnątrz student_panel)
-        student_panel.show_panel(st.session_state.dane)
+    # 3. ANALIZA ZDANYCH DZIAŁÓW (Twoja logika par kolumn)
+    dane = df_temp.fillna(0).iloc[0].values
+    kolumny = df_temp.columns
+    zdane = []
+    do_zrobienia = []
+
+    for i in range(3, 14, 2):
+        try:
+            raw_name = kolumny[i].split()[0]
+            nazwa = mapa_nazw.get(raw_name, kolumny[i])
+            suma = float(dane[i]) + float(dane[i+1])
+            if suma >= 4.5: zdane.append(nazwa)
+            else: do_zrobienia.append(nazwa)
+        except: continue
+
+    # 4. WYŚWIETLANIE
+    col_l, col_p = st.columns(2)
+    with col_l:
+        st.info("**✅ Zdane:**\n\n" + (", ".join(zdane) if zdane else "Brak"))
+    with col_p:
+        st.warning("**🚀 Do zrobienia:**\n\n" + (", ".join(do_zrobienia) if do_zrobienia else "Wszystko!"))
+
+    # 5. TABELA
+    st.write("### Twoje wyniki szczegółowe:")
+    st.dataframe(df_temp.iloc[:, :-4])
